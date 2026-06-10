@@ -360,6 +360,11 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
   </section>
 
   <section class="section">
+    <h2 class="label">💌 Komu píšeš? <span style="font-size:.8rem;font-family:Quicksand;color:#b06a85;font-weight:500">(nepovinné)</span></h2>
+    <input class="input" style="margin-top:0" type="text" id="komuInput" placeholder="Jméno příjemce — objeví se v dopise">
+  </section>
+
+  <section class="section">
     <h2 class="label">💬 Osobní zpráva <span style="font-size:.8rem;font-family:Quicksand;color:#b06a85;font-weight:500">(nepovinné)</span></h2>
     <textarea class="input" id="zpravaInput" placeholder="Napiš pár slov ze srdce…" maxlength="300"></textarea>
   </section>
@@ -589,9 +594,10 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
 
       document.title = data.stav === "potvrzeno" ? "Rande potvrzeno! 🎉" : "Pozvánka na rande 💗";
 
-      $("invSalutation").textContent = data.od
-        ? `Milá/ý, ${data.od} tě zve na rande!`
-        : "Milá/ý, někdo tě zve na rande!";
+      const salutation = data.komu
+        ? (data.od ? `Milá/ý ${data.komu}, ${data.od} tě zve na rande!` : `Milá/ý ${data.komu},`)
+        : (data.od ? `${data.od} tě zve na rande!` : "Máš pozvánku na rande!");
+      $("invSalutation").textContent = salutation;
 
       $("invAct").innerHTML = `<span class="em">${emoji}</span>${label}`;
 
@@ -661,7 +667,8 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
         badge.className = "badge potvrzeno";
         actions.classList.add("hidden");
         $("letterCard").classList.add("confetti-burst");
-        if (data.potvrdil) $("invSalutation").textContent = `${data.potvrdil} jde do toho! 🎉`;
+        const kdo = data.komu || data.potvrdil;
+        $("invSalutation").textContent = kdo ? `${kdo} jde do toho! 🎉` : "Rande potvrzeno! 🎉";
         /* po potvrzení vždy zobraz datum s odpočítáváním */
         if (data.datum) renderCountdown(data.datum);
       } else {
@@ -737,9 +744,7 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
 
     /* potvrzení */
     $("confirmBtn").addEventListener("click", async () => {
-      const who = prompt("Tvoje jméno? (nepovinné)") ?? "";
-      const upd = { stav: "potvrzeno", potvrdil: who.trim(), potvrzeno_kdy: serverTimestamp() };
-      /* při výběru z více termínů ulož zvolený datum */
+      const upd = { stav: "potvrzeno", potvrzeno_kdy: serverTimestamp() };
       if (selectedOpt) upd.datum = selectedOpt;
       try {
         await updateDoc(ref, upd);
@@ -795,6 +800,7 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
       if (prefill.misto)  $("mistoInput").value  = prefill.misto;
       if (prefill.zprava) $("zpravaInput").value = prefill.zprava;
       if (prefill.od)     $("nameInput").value   = prefill.od;
+      if (prefill.komu)   $("komuInput").value   = prefill.komu;
     }
 
     const chosenDates = () => [...sel.dates].sort((a, b) => a - b);
@@ -917,6 +923,7 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
         cas:          chosenTime(),
         aktivita: chosenAct(),
         od:       $("nameInput").value.trim(),
+        komu:     $("komuInput").value.trim(),
         misto:    $("mistoInput").value.trim(),
         zprava:   $("zpravaInput").value.trim(),
       };
