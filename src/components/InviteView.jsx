@@ -1,0 +1,117 @@
+import { useState, useEffect } from 'react'
+import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
+import { db } from '../firebase'
+import { baseUrl, downloadIcs, findAct } from '../utils'
+import EnvelopeView from './EnvelopeView'
+import LetterCard from './LetterCard'
+import ShareButtons from './ShareButtons'
+import Planner from './Planner'
+
+export default function InviteView({ randeId }) {
+  const [plan, setPlan] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [envelopeOpened, setEnvelopeOpened] = useState(false)
+  const [selectedOpt, setSelectedOpt] = useState(null)
+  const [error, setError] = useState(null)
+  const [editing, setEditing] = useState(false)
+  const [notFound, setNotFound] = useState(false)
+
+  const isCreator = localStorage.getItem(`creator_${randeId}`) === '1'
+
+  useEffect(() => {
+    const ref = doc(db, 'rande', randeId)
+    const unsub = onSnapshot(
+      ref,
+      (snap) => {
+        setLoading(false)
+        if (!snap.exists()) {
+          setNotFound(true)
+          return
+        }
+        setPlan(snap.data())
+      },
+      (err) => {
+        setLoading(false)
+        setError('Nepodařilo se načíst rande: ' + err.message)
+      }
+    )
+    return unsub
+  }, [randeId])
+
+  async function handleConfirm() {
+    const ref = doc(db, 'rande', randeId)
+    const upd = { stav: 'potvrzeno', potvrzeno_kdy: serverTimestamp() }
+    if (selectedOpt) upd.datum = selectedOpt
+    try {
+      await updateDoc(ref, upd)
+    } catch (err) {
+      setError('Potvrzení se nepodařilo uložit: ' + err.message)
+    }
+  }
+
+  if (loading) {
+    return <p className="sub" style={{ marginTop: '40vh' }}>Načítám… 💗</p>
+  }
+
+  if (notFound) {
+    return (
+      <div className="letter-card">
+        <span style={{ fontSize: '2rem' }}>🥀</span>
+        <h2 style={{ fontFamily: 'Cormorant Garamond, serif', color: '#a8244e' }}>Rande nebylo nalezeno</h2>
+        <p>Odkaz je neúplný nebo bylo rande smazáno.</p>
+      </div>
+    )
+  }
+
+  if (editing) {
+    return (
+      <Planner
+        editDoc={doc(db, 'rande', randeId)}
+        prefill={plan}
+        onEditDone={() => setEditing(false)}
+      />
+    )
+  }
+
+  if (!isCreator && !envelopeOpened) {
+    return <EnvelopeView onOpen={() => setEnvelopeOpened(true)} />
+  }
+
+  const invUrl = `${baseUrl()}?id=${randeId}`
+  const known = plan ? findAct(plan.aktivita) : null
+  const actLabel = known ? known.label : (plan?.aktivita || '')
+  const shareText = plan?.od
+    ? `${plan.od} tě zve na rande — ${actLabel}`
+    : `Máš pozvánku na rande — ${actLabel}`
+  const shareLabelText = plan?.stav === 'potvrzeno' ? 'Sdílet rande' : 'Sdílet pozvánku'
+
+  return (
+    <>
+      <p className="sub" style={{ marginBottom: '10px' }}>
+        <span className="live-dot"></span>Živé sledování — odpověď uvidíš okamžitě
+      </p>
+
+      <LetterCard
+        plan={plan}
+        selectedOpt={selectedOpt}
+        onSelectOpt={(opt) => setSelectedOpt(opt)}
+        onConfirm={handleConfirm}
+        onEdit={() => setEditing(true)}
+      />
+
+      <div className="row" style={{ marginTop: '12px' }}>
+        <button className="secondary" onClick={() => plan && downloadIcs(plan)}>
+          📅 Uložit do kalendáře
+        </button>
+        <button className="secondary" onClick={() => { window.location.href = baseUrl() }}>
+          ✨ Naplánovat jiné rande
+        </button>
+      </div>
+
+      <p className="share-label">{shareLabelText}</p>
+      <ShareButtons url={invUrl} text={shareText} />
+
+      {error && <p className="error">{error}</p>}
+    </>
+  )
+}
