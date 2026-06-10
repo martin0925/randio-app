@@ -4,29 +4,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project overview
 
-Single-file static web app (`index.html`) — a romantic date invitation system. The sender creates an invite, shares a link; the recipient opens an animated envelope, reads the letter, and confirms or counter-proposes. Everything is real-time via Firebase Firestore.
+React 18 + Vite date invitation app. The sender creates an invite and shares a link; the recipient opens an animated envelope, reads the letter, and confirms or counter-proposes. All state is in Firebase Firestore (real-time `onSnapshot`).
 
 Deployed on GitHub Pages: `https://martin0925.github.io/randio-app/`
 
+## Commands
+
+```bash
+npm run dev      # local dev server (http://localhost:5173/randio-app/)
+npm run build    # production build → dist/
+npm run preview  # preview built output
+```
+
 ## Deploy
 
-```
-git add index.html
-git commit -m "..."
-git push
-```
-
-GitHub Pages serves the `master` branch root. Changes are live within ~2 minutes.
+Push to `master` — GitHub Actions (`.github/workflows/deploy.yml`) builds with Vite and deploys `dist/` to GitHub Pages automatically. The Pages source must be set to "GitHub Actions" in the repo settings (not "Deploy from a branch").
 
 ## Architecture
 
-All code lives in `index.html` — no build step, no bundler, no npm.
+```
+src/
+  App.jsx             — reads ?id= from URL, renders Planner or InviteView
+  App.css             — all global + shared component styles
+  firebase.js         — Firebase init, exports db
+  constants.js        — ACTIVITIES, TIMES, DAYS, MONTHS, MONTHS_GEN
+  utils.js            — fmtDate, fmtD, parseDate, baseUrl, mapsUrl,
+                        countdownText, downloadIcs, findAct
+  components/
+    Planner.jsx       — create/counter-propose; props: editDoc, prefill, onEditDone
+    InviteView.jsx    — live onSnapshot view; handles envelope→letter→editing flow
+    EnvelopeView.jsx  — animated envelope (SVG body + clip-path flap)
+    EnvelopeView.css  — envelope-specific styles
+    LetterCard.jsx    — invite letter card with confirm/edit actions
+    ShareButtons.jsx  — WhatsApp/Telegram/Facebook/X + copy button
+    FloatingHearts.jsx — fixed background decoration
+public/
+  og.svg              — static Open Graph preview image
+```
 
-Firebase SDK is loaded via CDN (`https://www.gstatic.com/firebasejs/10.12.2/...`) using ES module imports inside a `<script type="module">`.
-
-**URL routing** — entirely client-side via `?id=`:
-- No `?id=` → planner mode (create invite)
-- `?id=<docId>` → invite mode (view/confirm invite)
+**URL routing** — client-side only via `?id=`:
+- No `?id=` → Planner mode (create invite)
+- `?id=<docId>` → InviteView mode (view/confirm/counter-propose)
 
 **Firestore document schema** (`rande/{id}`):
 ```
@@ -44,21 +62,13 @@ potvrzeno_kdy  timestamp
 upraveno_kdy   timestamp
 ```
 
-**Creator detection** — `localStorage.setItem("creator_${docId}", "1")` is set when a new invite is created. On the invite URL, creators skip the envelope animation and go directly to the live-status view.
+**Creator detection** — `localStorage.setItem('creator_${docId}', '1')` on invite creation. Creators skip the envelope animation and see live status directly.
 
-**Multi-date flow** — when `datumOptions.length > 1` and `stav !== "potvrzeno"`, the invite shows date-picker chips. The recipient's chosen date is written back as `datum` on confirm.
-
-## Firestore security rules
-
-The rules must be kept in sync with the document schema. Current required fields for `create`:
-```
-['datum', 'cas', 'aktivita', 'stav', 'vytvoreno']
-```
-`update` allows any fields as long as `stav` is `"protinavrh"` or `"potvrzeno"`.
+**Counter-proposal flow** — clicking edit in `InviteView` sets `editing=true`, rendering `<Planner editDoc={...} prefill={plan} onEditDone={...} />` inline. On submit, Planner writes `stav:'protinavrh'` to the same doc and calls `onEditDone()` after 1.2 s. No page reload; `onSnapshot` already has updated data.
 
 ## Key design decisions
 
-- **No backend** — all logic runs client-side; Firestore is the only persistence layer.
-- **Envelope animation** — SVG body + `clip-path` flap (not CSS border tricks, which had zero-height issues on mobile). The flap uses `transform-style: preserve-3d` + `perspective` for the 3-D flip.
-- **Counter-proposal** — reuses the same Firestore document and URL; no new doc is created. After submitting, the planner hides and `inviteView` is shown directly (no `location.reload()`).
-- **`og.svg`** — static Open Graph preview image committed alongside `index.html`.
+- **Vite base path** — `base: '/randio-app/'` in `vite.config.js` matches the GitHub Pages subpath. All asset URLs and the share URL (`baseUrl()` = `origin + pathname`) are relative to this.
+- **Envelope CSS** — SVG for the body/folds; `clip-path: polygon(0% 0%, 100% 0%, 50% 100%)` for the triangular flap; explicit `height: 200px` (not `aspect-ratio`) for iOS <15 compatibility. Flap flip uses `perspective(600px) rotateX(-180deg)`.
+- **No React Router** — only two "pages", distinguished by `?id=`. `window.location.href = baseUrl()` navigates to the planner.
+- **No notifications** — removed; were too intrusive.
