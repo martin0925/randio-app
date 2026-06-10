@@ -169,14 +169,6 @@ textarea.input { resize: vertical; min-height: 72px; margin-top: 10px; }
 .share-btn:hover { background: #ffe6ef; transform: translateY(-1px); }
 .share-btn.copied { background: #d7f5dd; border-color: #a8d5b5; color: #1e7a36; }
 
-/* ── NOTIFY BUTTON ─────────────────────────────────────── */
-.notify-btn {
-  width: 100%; margin-top: 10px; border: 1px dashed #ffc3d8; background: transparent;
-  border-radius: 999px; padding: 10px; font-family: inherit; font-size: .88rem;
-  color: #b06a85; cursor: pointer; transition: background .15s;
-}
-.notify-btn:hover { background: #fff0f5; }
-.notify-btn.on { border-style: solid; border-color: #d8366c; color: #d8366c; }
 
 /* ── ENVELOPE ──────────────────────────────────────────── */
 #envelopeView { text-align: center; padding-top: 48px; }
@@ -374,7 +366,6 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
     <p class="note" id="linkNote"></p>
     <p class="share-label">Sdílet pozvánku</p>
     <div class="share-btns" id="plannerShare"></div>
-    <button class="notify-btn" id="notifyBtn">🔔 Upozornit mě, až druhá strana odpoví</button>
   </div>
   <p class="error hidden" id="plannerError"></p>
 </div>
@@ -543,20 +534,6 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
     URL.revokeObjectURL(a.href);
   }
 
-  /* ── notifikace ── */
-  function requestNotifPermission(onGranted) {
-    if (!("Notification" in window)) return;
-    if (Notification.permission === "granted") { onGranted(); return; }
-    Notification.requestPermission().then((p) => { if (p === "granted") onGranted(); });
-  }
-
-  function showNotif(title, body) {
-    if (Notification.permission !== "granted") return;
-    new Notification(title, {
-      body,
-      icon: "https://martin0925.github.io/randio-app/og.svg"
-    });
-  }
 
   /* ── Firebase init ── */
   let db = null;
@@ -697,10 +674,6 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
       setTimeout(() => {
         $("envelopeView").classList.add("hidden");
         $("inviteView").classList.remove("hidden");
-        /* požádat o notifikace pro toho, kdo sleduje */
-        if (Notification.permission === "default") {
-          Notification.requestPermission();
-        }
       }, 1550);
     }
 
@@ -715,10 +688,6 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
 
       const data = snap.data();
 
-      /* notifikace při změně stavu */
-      if (prevStav !== null && prevStav !== "potvrzeno" && data.stav === "potvrzeno") {
-        showNotif("Rande potvrzeno! 🎉", data.potvrdil ? `${data.potvrdil} jde do toho!` : "Druhá strana potvrdila!");
-      }
       prevStav = data.stav;
 
       renderInvite(data);
@@ -970,27 +939,6 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
 
           buildShareButtons($("plannerShare"), url, shareText);
 
-          /* notifikace — sledovat dokument v pozadí */
-          const notifyBtn = $("notifyBtn");
-          notifyBtn.addEventListener("click", () => {
-            requestNotifPermission(() => {
-              notifyBtn.textContent = "🔔 Oznámení zapnutá ✓";
-              notifyBtn.classList.add("on");
-              notifyBtn.disabled = true;
-              let firstSnap = true;
-              onSnapshot(docRef, (snap) => {
-                if (firstSnap) { firstSnap = false; return; }
-                if (!snap.exists()) return;
-                const s = snap.data().stav;
-                if (s === "potvrzeno") {
-                  const kdo = snap.data().potvrdil;
-                  showNotif("Rande potvrzeno! 🎉", kdo ? `${kdo} jde do toho!` : "Druhá strana potvrdila!");
-                } else if (s === "protinavrh") {
-                  showNotif("Protinávrh 📩", "Druhá strana upravila datum nebo aktivitu.");
-                }
-              });
-            });
-          });
         }
       } catch (e2) {
         err.textContent = "Uložení se nepodařilo: " + e2.message;
