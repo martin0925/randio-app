@@ -21,6 +21,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         calView: { y: today.getFullYear(), m: today.getMonth() },
         od: '',
         komu: '',
+        osloveni_komu: '',
         misto: '',
         zprava: '',
       }
@@ -43,6 +44,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       calView: { y: firstDate.getFullYear(), m: firstDate.getMonth() },
       od: prefill.od || '',
       komu: prefill.komu || '',
+      osloveni_komu: prefill.osloveni_komu || '',
       misto: prefill.misto || '',
       zprava: prefill.zprava || '',
     }
@@ -60,8 +62,9 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       const prefs = snap.data()
       setState((s) => ({
         ...s,
-        od:   s.od   || prefs.jmeno            || '',
-        komu: s.komu || prefs.jmeno_partnera   || '',
+        od:            s.od            || prefs.jmeno              || '',
+        komu:          s.komu          || prefs.jmeno_partnera     || '',
+        osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
       }))
     })
   }, [editDoc])
@@ -73,7 +76,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
 
-  const { dates, time, customTime, act, customAct, calView, od, komu, misto, zprava } = state
+  const { dates, time, customTime, act, customAct, calView, od, komu, osloveni_komu, misto, zprava } = state
 
   const chosenTime = () => customTime || time
   const chosenAct = () => customAct.trim() || act
@@ -129,6 +132,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       aktivita: chosenAct(),
       od: od.trim(),
       komu: komu.trim(),
+      osloveni_komu: osloveni_komu.trim(),
       misto: misto.trim(),
       zprava: zprava.trim(),
     }
@@ -327,6 +331,24 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           placeholder="Jméno příjemce — objeví se v dopise"
           value={komu}
           onChange={(e) => setState((s) => ({ ...s, komu: e.target.value }))}
+        />
+      </section>
+
+      {/* Salutation */}
+      <section className="section">
+        <h2 className="label">
+          🗣️ Oslovení v dopise <span className="optional">(nepovinné)</span>
+        </h2>
+        <p className="cal-hint" style={{ margin: '0 0 8px', textAlign: 'left' }}>
+          Přesné oslovení v 5. pádu — použije se místo „Milá/ý jméno"
+        </p>
+        <input
+          className="input"
+          style={{ marginTop: 0 }}
+          type="text"
+          placeholder="Milá Terezko, Milý Karle, lásko…"
+          value={osloveni_komu}
+          onChange={(e) => setState((s) => ({ ...s, osloveni_komu: e.target.value }))}
         />
       </section>
 

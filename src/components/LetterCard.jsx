@@ -17,6 +17,10 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
   if (plan.stav === 'potvrzeno') {
     const kdo = plan.komu || plan.potvrdil
     salutation = kdo ? `${kdo} jde do toho! 🎉` : 'Rande potvrzeno! 🎉'
+  } else if (plan.osloveni_komu) {
+    salutation = plan.od
+      ? `${plan.osloveni_komu}, ${plan.od} tě zve na rande!`
+      : `${plan.osloveni_komu},`
   } else if (plan.komu) {
     salutation = plan.od
       ? `Milá/ý ${plan.komu}, ${plan.od} tě zve na rande!`

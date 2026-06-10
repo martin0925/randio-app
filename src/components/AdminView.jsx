@@ -83,7 +83,7 @@ function PrefsPanel({ uid }) {
   const [jmenoPartnera, setJmenoPartnera] = useState('')
   const [pohlavi, setPohlavi] = useState('')
   const [pohlaviPartnera, setPohlaviPartnera] = useState('')
-  const [osloveni, setOsloveni] = useState('tykani')
+  const [osloveniPartnera, setOsloveniPartnera] = useState('')
   const [oblibene, setOblibene] = useState([])
   const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -97,7 +97,7 @@ function PrefsPanel({ uid }) {
         setJmenoPartnera(d.jmeno_partnera || '')
         setPohlavi(d.pohlavi || '')
         setPohlaviPartnera(d.pohlavi_partnera || '')
-        setOsloveni(d.osloveni || 'tykani')
+        setOsloveniPartnera(d.osloveni_partnera || '')
         setOblibene(d.oblibene_aktivity || [])
       }
       setLoaded(true)
@@ -109,7 +109,8 @@ function PrefsPanel({ uid }) {
     await setDoc(doc(db, 'users', uid), {
       jmeno, jmeno_partnera: jmenoPartnera,
       pohlavi, pohlavi_partnera: pohlaviPartnera,
-      osloveni, oblibene_aktivity: oblibene,
+      osloveni_partnera: osloveniPartnera,
+      oblibene_aktivity: oblibene,
       updated: serverTimestamp(),
     }, { merge: true })
     setSaving(false)
@@ -158,13 +159,14 @@ function PrefsPanel({ uid }) {
       </div>
 
       <div className="pref-section">
-        <label className="pref-label">🗣️ Oslovení v dopise</label>
-        <div className="pref-radio-group">
-          <button className={`pref-radio${osloveni === 'tykani' ? ' sel' : ''}`}
-            onClick={() => setOsloveni('tykani')}>Tykání</button>
-          <button className={`pref-radio${osloveni === 'vykani' ? ' sel' : ''}`}
-            onClick={() => setOsloveni('vykani')}>Vykání</button>
-        </div>
+        <label className="pref-label">🗣️ Oslovení partnera v dopise</label>
+        <p className="pref-hint">
+          Přesné oslovení v 5. pádu — auto-doplní se při tvorbě pozvánky
+        </p>
+        <input className="input" style={{ marginTop: 0 }} type="text"
+          placeholder="Milá Terezko, Milý Karle, lásko…"
+          value={osloveniPartnera}
+          onChange={(e) => setOsloveniPartnera(e.target.value)} />
       </div>
 
       <div className="pref-section">
