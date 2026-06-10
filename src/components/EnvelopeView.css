@@ -19,97 +19,71 @@
 }
 
 /* ── SCENE ───────────────────────────────────────────────── */
-/*
-  scene: 300 × 360
-  ┌──────────────────────────┐ 0
-  │   160px  rise space      │
-  ├──────────────────────────┤ 160  ← envelope top = flap hinge
-  │          envelope        │
-  └──────────────────────────┘ 360
-
-  Vrstvy (zdola nahoru):
-    1  env-back   – zadní stěna + vnitřek obálky
-    2  env-letter – dopis (MEZI zadní stěnou a přední kapsou!)
-    3  env-front  – přední kapsa (boční + spodní sklady)
-    4  env-flap   – klopa (po otevření klesne na z-index 1, dopis jede před ní)
-    6  env-seal   – pečeť
-
-  Díky sendviči back < letter < front dopis opravdu VYJÍŽDÍ
-  ze štěrbiny obálky: jeho spodek zůstává schovaný za kapsou.
-*/
+/* Jediný zdroj rozměrů: max-width + aspect-ratio.
+   SVG i klopa (v %) se škálují spolu — žádné media queries
+   s přepočty souřadnic. */
 .env-scene {
   position: relative;
-  width: 100%; max-width: 300px; height: 360px;
+  width: 100%; max-width: 300px;
+  aspect-ratio: 300 / 360;
   margin: 0 auto; cursor: pointer;
-  perspective: 800px;          /* společná perspektiva pro 3D klopu */
 }
 
-@media (max-width: 340px) {
-  .env-scene { max-width: 260px; height: 312px; } /* scale ≈ 0.867 */
+.env-svg {
+  display: block;
+  width: 100%; height: 100%;
 }
 
-/* ── ZADNÍ STĚNA + VNITŘEK ───────────────────────────────── */
-.env-back {
-  position: absolute;
-  bottom: 0; left: 0; right: 0; height: 200px;
-  z-index: 1;
-  filter: drop-shadow(0 10px 28px rgba(194, 24, 91, .22));
-  /* žádné hover přechody filtru – zdroj problikávání */
-}
-.env-back svg { display: block; width: 100%; height: 100%; }
-
-@media (max-width: 340px) { .env-back { height: 174px; } }
-
-/* ── DOPIS (mezi zadní stěnou a kapsou) ──────────────────── */
+/* ── DOPIS (SVG <g>) ─────────────────────────────────────── */
+/* CSS transform na SVG elementu pracuje v jednotkách viewBoxu,
+   takže translateY(-162px) = −162 jednotek scény při libovolné
+   vykreslené velikosti. */
 .env-letter {
-  position: absolute;
-  left: 24px; right: 24px;
-  bottom: 12px; height: 152px;
-  z-index: 2;
-  background: linear-gradient(168deg, #fffdfe 0%, #fff4f8 100%);
-  border: 1px solid #ffd3e3;
-  border-radius: 6px;
-  box-shadow: 0 2px 10px rgba(194, 24, 91, .10);
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center; gap: 10px;
-  padding: 14px;
   will-change: transform;
   transition: transform .8s cubic-bezier(.3, 1.25, .45, 1); /* jemný overshoot */
 }
-
 .env-letter.open {
-  transform: translateY(-170px);
+  transform: translateY(-162px);
 }
 
-@media (max-width: 340px) {
-  .env-letter { left: 20px; right: 20px; height: 130px; bottom: 11px; }
-  .env-letter.open { transform: translateY(-147px); }
-}
-
-.env-letter-icon { font-size: 2rem; line-height: 1; display: block; }
-.env-letter-lines { width: 66%; display: flex; flex-direction: column; gap: 6px; }
-.env-letter-lines div { height: 2px; background: #ffd3e3; border-radius: 2px; }
-.env-letter-lines div:nth-child(2) { width: 78%; align-self: flex-end; }
-.env-letter-lines div:nth-child(3) { width: 55%; }
-
-/* ── PŘEDNÍ KAPSA (sklady) ───────────────────────────────── */
-.env-front {
+/* ── PEČEŤ (HTML overlay, % scény) ───────────────────────── */
+/* Mizení na vnějším divu, pulz na vnitřním spanu —
+   transformace se nehádají. Střed klopy ≈ y 217/360 = 60 %. */
+.env-seal {
   position: absolute;
-  bottom: 0; left: 0; right: 0; height: 200px;
-  z-index: 3;
-  pointer-events: none;        /* klikání jde skrz na scénu */
+  top: 60%; left: 50%;
+  transform: translate(-50%, -50%);
+  line-height: 1;
+  transition: opacity .28s, transform .28s;
+  pointer-events: none;
 }
-.env-front svg { display: block; width: 100%; height: 100%; }
+.env-seal.hide {
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(.3);
+}
+.env-seal-inner {
+  display: block;
+  font-size: 2.4rem;
+  animation: sealPulse 2.2s ease-in-out infinite;
+}
+.env-seal.hide .env-seal-inner { animation: none; }
 
-@media (max-width: 340px) { .env-front { height: 174px; } }
+@keyframes sealPulse {
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
+}
 
-/* ── KLOPA ───────────────────────────────────────────────── */
-/* Pant klopy = horní hrana obálky (360 − 200 = 160).
-   1px překryv, aby mezi klopou a tělem nevznikala světlá spára. */
+/* ── KLOPA (jediný HTML overlay kvůli 3D rotaci) ─────────── */
+/* Zarovnání:
+   - left/right 0 → trojúhelník začíná přesně v rozích obálky
+   - top s −1px překryvem → žádná světlá spára na pantu
+   - výška 116/360 = 32.222 % → špička klopy (y≈277) sahá pod bod,
+     kde se potkávají boční sklady (y 275) → uprostřed nic neprosvítá */
 .env-flap {
   position: absolute;
-  top: 159px; left: 0; right: 0; height: 108px;
-  z-index: 4;
+  top: calc(44.444% - 1px);
+  left: 0; right: 0;
+  height: calc(32.222% + 1px);
   transform-origin: 50% 0%;
   transform-style: preserve-3d;
   will-change: transform;
@@ -117,8 +91,8 @@
   pointer-events: none;
 }
 .env-flap.open {
-  transform: rotateX(-180deg);
-  z-index: 1;                  /* po otevření za dopis i za kapsu */
+  /* perspektiva lokálně v transformaci → neovlivňuje sourozence */
+  transform: perspective(800px) rotateX(-180deg);
 }
 
 /* přední strana klopy */
@@ -128,7 +102,7 @@
   clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
   backface-visibility: hidden;
 }
-/* rub klopy (podšívka s puntíky) – viditelný po překlopení */
+/* rub klopy (podšívka s puntíky) — viditelný po překlopení */
 .env-flap::after {
   content: ''; position: absolute; inset: 0;
   background:
@@ -139,37 +113,21 @@
   backface-visibility: hidden;
 }
 
-@media (max-width: 340px) {
-  .env-flap { top: 137px; height: 94px; } /* 312 − 174 = 138, −1px překryv */
-}
-
-/* ── PEČEŤ ───────────────────────────────────────────────── */
-/* Pozicování a mizení řeší vnější prvek, pulz vnitřní —
-   transformace se tak nehádají (další zdroj blikání). */
-.env-seal {
-  position: absolute;
-  top: 212px; left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 6; line-height: 1;
-  transition: opacity .28s, transform .28s;
-}
-.env-seal.hide {
+/* Po překlopení musí klopa skončit ZA dopisem — HTML overlay je ale
+   vždy nad SVG. Řešení: předávka. HTML klopa po dotočení zprůhlední
+   a ve stejný okamžik se ukáže její statická SVG kopie vykreslená
+   PŘED vnitřkem obálky, ale ZA dopisem (.env-flap-flipped v JSX). */
+.env-flap.open {
+  transition: transform .65s cubic-bezier(.4, 0, .2, 1),
+              opacity .25s ease .6s;
   opacity: 0;
-  transform: translate(-50%, -50%) scale(.3);
 }
-.env-seal-inner {
-  display: block; font-size: 2.4rem;
-  animation: sealPulse 2.2s ease-in-out infinite;
+.env-flap-flipped {
+  opacity: 0;
+  transition: opacity .25s ease .6s; /* sync s fade-outem HTML klopy */
 }
-.env-seal.hide .env-seal-inner { animation: none; }
-
-@keyframes sealPulse {
-  0%, 100% { transform: scale(1); }
-  50%      { transform: scale(1.1); }
-}
-
-@media (max-width: 340px) {
-  .env-seal { top: 183px; }
+.env-flap-flipped.show {
+  opacity: 1;
 }
 
 @media (prefers-reduced-motion: reduce) {
