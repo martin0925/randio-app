@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#fff0f5"/>
+      <stop offset="55%" stop-color="#ffe1ec"/>
+      <stop offset="100%" stop-color="#ffd3e3"/>
+    </linearGradient>
+    <linearGradient id="env" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffc3d8"/>
+      <stop offset="100%" stop-color="#ffaac8"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- decorative hearts -->
+  <text x="120" y="140" font-size="48" opacity=".25">💗</text>
+  <text x="1020" y="520" font-size="56" opacity=".2">🌸</text>
+  <text x="80" y="500" font-size="36" opacity=".18">💗</text>
+  <text x="1060" y="120" font-size="40" opacity=".22">💗</text>
+
+  <!-- envelope body -->
+  <rect x="420" y="190" width="360" height="240" rx="6" fill="white" stroke="#ffc3d8" stroke-width="3"/>
+  <!-- envelope V-folds -->
+  <polygon points="420,190 600,310 780,190" fill="#ffd3e3" opacity=".6"/>
+  <polygon points="420,190 420,430 550,310" fill="#ffc3d8" opacity=".5"/>
+  <polygon points="780,190 780,430 650,310" fill="#ffc3d8" opacity=".5"/>
+  <!-- flap -->
+  <polygon points="420,190 600,310 780,190 780,185 420,185" fill="url(#env)" opacity=".9"/>
+  <!-- seal -->
+  <circle cx="600" cy="310" r="26" fill="#e2477d"/>
+  <text x="600" y="320" font-size="24" text-anchor="middle" fill="white">💗</text>
+
+  <!-- title -->
+  <text x="600" y="510" font-family="Georgia, serif" font-size="58" font-weight="600" text-anchor="middle" fill="#a8244e">Pozvánka na rande</text>
+  <text x="600" y="560" font-family="Arial, sans-serif" font-size="28" text-anchor="middle" fill="#b06a85">Otevři svůj dopis 💌</text>
+</svg>

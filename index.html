@@ -4,145 +4,307 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Naplánuj rande 💗</title>
+<meta name="description" content="Pošli romantickou pozvánku na rande — výběr data, místa, aktivity a osobní zpráva.">
 <meta property="og:title" content="Pozvánka na rande 💗">
-<meta property="og:description" content="Naplánuj rande, nebo se podívej na pozvánku!">
+<meta property="og:description" content="Otevři svůj dopis a zjisti, kdo tě zve...">
+<meta property="og:image" content="https://martin0925.github.io/randio-app/og.svg">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;600&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Quicksand:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; min-height: 100vh;
-    background: linear-gradient(170deg, #fff0f5 0%, #ffe1ec 55%, #ffd3e3 100%);
-    font-family: 'Quicksand', sans-serif; color: #5a2438;
-    display: flex; justify-content: center;
-    padding: 28px 16px 56px; overflow-x: hidden;
-  }
-  .card { width: 100%; max-width: 480px; position: relative; z-index: 1; }
-  h1.title {
-    font-family: 'Cormorant Garamond', serif; font-size: 2.3rem;
-    font-weight: 600; text-align: center; margin: 0; color: #a8244e;
-  }
-  .sub { text-align: center; margin: 4px 0 26px; font-size: .92rem; color: #b06a85; }
-  .section {
-    background: rgba(255,253,254,.85); border: 1px solid #ffd1e0;
-    border-radius: 20px; padding: 18px; margin-bottom: 16px;
-    box-shadow: 0 4px 16px rgba(196,64,110,.07);
-  }
-  .label {
-    font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;
-    font-weight: 600; color: #a8244e; margin: 0 0 12px;
-    display: flex; align-items: center; gap: 8px;
-  }
-  .cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
-  .cal-title { font-weight: 600; font-size: .98rem; }
-  .nav {
-    background: #ffe6ef; border: 1px solid #ffc3d8; color: #a8244e;
-    border-radius: 10px; width: 34px; height: 34px; font-size: 1rem; cursor: pointer;
-  }
-  .nav:hover { background: #ffd3e3; }
-  .grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
-  .dow { text-align: center; font-size: .7rem; font-weight: 600; color: #c98aa3; padding: 4px 0; text-transform: uppercase; }
-  .day {
-    aspect-ratio: 1; border: none; background: transparent; border-radius: 50%;
-    font-family: inherit; font-size: .85rem; color: #5a2438; cursor: pointer;
-    transition: background .15s, transform .15s;
-  }
-  .day:hover:not(:disabled) { background: #ffdbe7; }
-  .day:disabled { color: #dcb4c4; cursor: default; }
-  .day.sel { background: #d8366c; color: #fff; font-weight: 600; transform: scale(1.08); }
-  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
-  .chip {
-    border: 1px solid #ffc3d8; background: #fff7fa; color: #5a2438;
-    border-radius: 999px; padding: 8px 14px; font-family: inherit;
-    font-size: .88rem; font-weight: 500; cursor: pointer;
-  }
-  .chip:hover { background: #ffe6ef; }
-  .chip.sel { background: #d8366c; border-color: #d8366c; color: #fff; }
-  .input {
-    width: 100%; margin-top: 10px; border: 1px solid #ffc3d8; background: #fff;
-    border-radius: 12px; padding: 10px 14px; font-family: inherit;
-    font-size: .9rem; color: #5a2438; outline: none;
-  }
-  .input:focus { border-color: #d8366c; box-shadow: 0 0 0 3px #ffd3e3; }
-  .acts { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 8px; }
-  .act {
-    border: 1px solid #ffc3d8; background: #fff7fa; border-radius: 14px;
-    padding: 12px 10px; font-family: inherit; font-size: .82rem; font-weight: 500;
-    color: #5a2438; cursor: pointer; text-align: center;
-    transition: background .15s, transform .15s;
-  }
-  .act:hover { background: #ffe6ef; }
-  .act.sel { background: #d8366c; border-color: #d8366c; color: #fff; transform: translateY(-2px); }
-  .act .em { display: block; font-size: 1.5rem; margin-bottom: 4px; }
-  .cta {
-    width: 100%; border: none; border-radius: 999px; padding: 15px;
-    font-family: inherit; font-size: 1.02rem; font-weight: 600; color: #fff;
-    background: linear-gradient(120deg, #e2477d, #c2185b); cursor: pointer;
-    box-shadow: 0 6px 20px rgba(194,24,91,.35); transition: transform .15s, opacity .15s;
-  }
-  .cta:hover:not(:disabled) { transform: translateY(-2px); }
-  .cta:disabled { opacity: .45; cursor: default; box-shadow: none; }
-  .invite {
-    background: #fffdfd; border: 2px dashed #e2477d; border-radius: 22px;
-    padding: 30px 24px; text-align: center;
-    box-shadow: 0 10px 30px rgba(194,24,91,.15);
-  }
-  .invite.confirmed { border-style: solid; }
-  .invite h2 {
-    font-family: 'Cormorant Garamond', serif; font-size: 1.9rem;
-    font-weight: 600; color: #a8244e; margin: 6px 0 4px;
-  }
-  .invite .big { font-size: 2.6rem; }
-  .invite p { margin: 6px 0; font-size: .95rem; }
-  .invite .detail { font-weight: 600; color: #c2185b; }
-  .badge {
-    display: inline-block; margin-top: 10px; padding: 6px 14px;
-    border-radius: 999px; font-size: .8rem; font-weight: 600;
-  }
-  .badge.navrh { background: #fff3cd; color: #8a6d1a; }
-  .badge.protinavrh { background: #ffe0b2; color: #9c5700; }
-  .badge.potvrzeno { background: #d7f5dd; color: #1e7a36; }
-  .row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-  .row > * { flex: 1; min-width: 140px; }
-  .secondary {
-    border: 1px solid #ffc3d8; background: #fff7fa; color: #a8244e;
-    border-radius: 999px; padding: 12px; font-family: inherit; font-weight: 600;
-    font-size: .9rem; cursor: pointer;
-  }
-  .secondary:hover { background: #ffe6ef; }
-  .primary {
-    border: none; background: linear-gradient(120deg, #e2477d, #c2185b);
-    color: #fff; border-radius: 999px; padding: 12px; font-family: inherit;
-    font-weight: 600; font-size: .9rem; cursor: pointer;
-  }
-  .hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
-  .heart { position: absolute; bottom: -40px; font-size: 1.2rem; opacity: .5; animation: float linear infinite; }
-  @keyframes float { to { transform: translateY(-110vh) rotate(20deg); opacity: 0; } }
-  @media (prefers-reduced-motion: reduce) {
-    .heart { display: none; }
-    .day.sel, .act.sel { transform: none; }
-  }
-  button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline-offset: 2px; }
-  .hidden { display: none; }
-  .note { font-size: .8rem; color: #b06a85; margin-top: 10px; text-align: center; word-break: break-all; }
-  .error { font-size: .85rem; color: #b3261e; background: #fde8e6; border: 1px solid #f5c6c0; border-radius: 12px; padding: 10px 14px; margin-top: 12px; text-align: center; }
-  .live-dot {
-    display: inline-block; width: 8px; height: 8px; border-radius: 50%;
-    background: #1e7a36; margin-right: 6px; animation: pulse 1.6s infinite;
-  }
-  @keyframes pulse { 50% { opacity: .3; } }
+* { box-sizing: border-box; }
+body {
+  margin: 0; min-height: 100vh;
+  background: linear-gradient(170deg, #fff0f5 0%, #ffe1ec 55%, #ffd3e3 100%);
+  font-family: 'Quicksand', sans-serif; color: #5a2438;
+  display: flex; justify-content: center;
+  padding: 28px 16px 56px; overflow-x: hidden;
+}
+.card { width: 100%; max-width: 480px; position: relative; z-index: 1; }
+h1.title {
+  font-family: 'Cormorant Garamond', serif; font-size: 2.3rem;
+  font-weight: 600; text-align: center; margin: 0; color: #a8244e;
+}
+.sub { text-align: center; margin: 4px 0 26px; font-size: .92rem; color: #b06a85; }
+.section {
+  background: rgba(255,253,254,.85); border: 1px solid #ffd1e0;
+  border-radius: 20px; padding: 18px; margin-bottom: 16px;
+  box-shadow: 0 4px 16px rgba(196,64,110,.07);
+}
+.label {
+  font-family: 'Cormorant Garamond', serif; font-size: 1.3rem;
+  font-weight: 600; color: #a8244e; margin: 0 0 12px;
+  display: flex; align-items: center; gap: 8px;
+}
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+.cal-title { font-weight: 600; font-size: .98rem; }
+.nav {
+  background: #ffe6ef; border: 1px solid #ffc3d8; color: #a8244e;
+  border-radius: 10px; width: 34px; height: 34px; font-size: 1rem; cursor: pointer;
+}
+.nav:hover { background: #ffd3e3; }
+.grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 4px; }
+.dow { text-align: center; font-size: .7rem; font-weight: 600; color: #c98aa3; padding: 4px 0; text-transform: uppercase; }
+.day {
+  aspect-ratio: 1; border: none; background: transparent; border-radius: 50%;
+  font-family: inherit; font-size: .85rem; color: #5a2438; cursor: pointer;
+  transition: background .15s, transform .15s;
+}
+.day:hover:not(:disabled) { background: #ffdbe7; }
+.day:disabled { color: #dcb4c4; cursor: default; }
+.day.sel { background: #d8366c; color: #fff; font-weight: 600; transform: scale(1.08); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  border: 1px solid #ffc3d8; background: #fff7fa; color: #5a2438;
+  border-radius: 999px; padding: 8px 14px; font-family: inherit;
+  font-size: .88rem; font-weight: 500; cursor: pointer;
+}
+.chip:hover { background: #ffe6ef; }
+.chip.sel { background: #d8366c; border-color: #d8366c; color: #fff; }
+.input {
+  width: 100%; margin-top: 10px; border: 1px solid #ffc3d8; background: #fff;
+  border-radius: 12px; padding: 10px 14px; font-family: inherit;
+  font-size: .9rem; color: #5a2438; outline: none;
+}
+.input:focus { border-color: #d8366c; box-shadow: 0 0 0 3px #ffd3e3; }
+textarea.input { resize: vertical; min-height: 72px; margin-top: 10px; }
+.acts { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px,1fr)); gap: 8px; }
+.act {
+  border: 1px solid #ffc3d8; background: #fff7fa; border-radius: 14px;
+  padding: 12px 10px; font-family: inherit; font-size: .82rem; font-weight: 500;
+  color: #5a2438; cursor: pointer; text-align: center;
+  transition: background .15s, transform .15s;
+}
+.act:hover { background: #ffe6ef; }
+.act.sel { background: #d8366c; border-color: #d8366c; color: #fff; transform: translateY(-2px); }
+.act .em { display: block; font-size: 1.5rem; margin-bottom: 4px; }
+.cta {
+  width: 100%; border: none; border-radius: 999px; padding: 15px;
+  font-family: inherit; font-size: 1.02rem; font-weight: 600; color: #fff;
+  background: linear-gradient(120deg, #e2477d, #c2185b); cursor: pointer;
+  box-shadow: 0 6px 20px rgba(194,24,91,.35); transition: transform .15s, opacity .15s;
+}
+.cta:hover:not(:disabled) { transform: translateY(-2px); }
+.cta:disabled { opacity: .45; cursor: default; box-shadow: none; }
+
+/* ── LETTER / INVITE ───────────────────────────────────── */
+.letter-card {
+  background: #fffdfb;
+  border: 1px solid #f5d0dc;
+  border-radius: 18px;
+  padding: 32px 28px 24px;
+  box-shadow: 0 12px 40px rgba(194,24,91,.12), 0 2px 8px rgba(194,24,91,.06);
+  position: relative;
+  overflow: hidden;
+  animation: letterFadeIn .5s ease;
+}
+@keyframes letterFadeIn { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:none; } }
+.letter-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, #e2477d, #f48fb1, #e2477d);
+}
+.letter-salutation {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 1.15rem; font-style: italic; color: #b06a85;
+  margin: 0 0 18px;
+}
+.letter-activity {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 2rem; font-weight: 600; color: #a8244e;
+  margin: 0 0 6px; line-height: 1.2;
+}
+.letter-activity .em { font-size: 2.2rem; margin-right: 8px; vertical-align: middle; }
+.letter-meta { margin: 14px 0; display: flex; flex-direction: column; gap: 6px; }
+.letter-meta-row { display: flex; align-items: center; gap: 8px; font-size: .95rem; }
+.letter-meta-row strong { color: #c2185b; min-width: 20px; }
+.letter-meta-row a { color: #c2185b; text-decoration: none; font-weight: 600; }
+.letter-meta-row a:hover { text-decoration: underline; }
+.letter-message {
+  margin: 18px 0 0;
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 1.08rem; color: #7a3850; line-height: 1.6;
+  border-left: 3px solid #ffc3d8; padding-left: 14px;
+}
+.letter-sign {
+  text-align: right; margin-top: 20px;
+  font-family: 'Cormorant Garamond', serif; font-style: italic;
+  font-size: 1.05rem; color: #b06a85;
+}
+.letter-divider {
+  border: none; border-top: 1px dashed #ffd1e0; margin: 20px 0;
+}
+.badge {
+  display: inline-block; padding: 6px 14px;
+  border-radius: 999px; font-size: .8rem; font-weight: 600;
+}
+.badge.navrh { background: #fff3cd; color: #8a6d1a; }
+.badge.protinavrh { background: #ffe0b2; color: #9c5700; }
+.badge.potvrzeno { background: #d7f5dd; color: #1e7a36; }
+.row { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.row > * { flex: 1; min-width: 140px; }
+.secondary {
+  border: 1px solid #ffc3d8; background: #fff7fa; color: #a8244e;
+  border-radius: 999px; padding: 12px; font-family: inherit; font-weight: 600;
+  font-size: .9rem; cursor: pointer;
+}
+.secondary:hover { background: #ffe6ef; }
+.primary {
+  border: none; background: linear-gradient(120deg, #e2477d, #c2185b);
+  color: #fff; border-radius: 999px; padding: 12px; font-family: inherit;
+  font-weight: 600; font-size: .9rem; cursor: pointer;
+}
+
+/* ── SOCIAL SHARE ──────────────────────────────────────── */
+.share-label { font-size: .8rem; color: #b06a85; margin: 16px 0 8px; text-align: center; }
+.share-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.share-btn {
+  border: 1px solid #ffc3d8; background: #fff7fa; color: #5a2438;
+  border-radius: 999px; padding: 8px 16px; font-family: inherit;
+  font-size: .85rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 6px; text-decoration: none;
+  transition: background .15s, transform .15s;
+}
+.share-btn:hover { background: #ffe6ef; transform: translateY(-1px); }
+.share-btn.copied { background: #d7f5dd; border-color: #a8d5b5; color: #1e7a36; }
+
+/* ── NOTIFY BUTTON ─────────────────────────────────────── */
+.notify-btn {
+  width: 100%; margin-top: 10px; border: 1px dashed #ffc3d8; background: transparent;
+  border-radius: 999px; padding: 10px; font-family: inherit; font-size: .88rem;
+  color: #b06a85; cursor: pointer; transition: background .15s;
+}
+.notify-btn:hover { background: #fff0f5; }
+.notify-btn.on { border-style: solid; border-color: #d8366c; color: #d8366c; }
+
+/* ── ENVELOPE ──────────────────────────────────────────── */
+#envelopeView { text-align: center; padding-top: 60px; }
+.envelope-hint { color: #b06a85; font-size: .92rem; margin-top: 18px; animation: pulse 1.8s infinite; }
+@keyframes pulse { 50% { opacity: .5; } }
+
+.env-wrap {
+  width: 300px; height: 200px;
+  position: relative; margin: 0 auto; cursor: pointer;
+  filter: drop-shadow(0 10px 28px rgba(194,24,91,.22));
+  transition: transform .2s;
+}
+.env-wrap:hover { transform: scale(1.03) translateY(-2px); }
+
+.env-body {
+  position: absolute; inset: 0;
+  background: linear-gradient(160deg, #fff0f5, #ffe6ef);
+  border: 2px solid #ffc3d8;
+  border-radius: 3px 3px 10px 10px;
+  overflow: hidden;
+}
+/* inner fold lines */
+.env-body::before {
+  content: '';
+  position: absolute; bottom: 0; left: 0;
+  border-style: solid;
+  border-width: 100px 0 0 150px;
+  border-color: transparent transparent transparent #ffd3e3;
+}
+.env-body::after {
+  content: '';
+  position: absolute; bottom: 0; right: 0;
+  border-style: solid;
+  border-width: 100px 150px 0 0;
+  border-color: transparent #ffd3e3 transparent transparent;
+}
+
+/* flap */
+.env-flap {
+  position: absolute; top: -1px; left: -1px; right: -1px; height: 0;
+  border-left: 151px solid transparent;
+  border-right: 151px solid transparent;
+  border-top: 106px solid #ffc3d8;
+  z-index: 4;
+  transform-origin: 50% 0%;
+  transition: transform .65s cubic-bezier(.4,0,.2,1);
+  transform-style: preserve-3d;
+}
+.env-flap.open { transform: perspective(600px) rotateX(-180deg); }
+/* inside of flap */
+.env-flap::after {
+  content: '';
+  position: absolute;
+  top: -106px; left: -151px;
+  border-left: 151px solid transparent;
+  border-right: 151px solid transparent;
+  border-top: 106px solid #ffe6ef;
+  backface-visibility: hidden;
+}
+
+/* letter peek inside envelope */
+.env-letter {
+  position: absolute;
+  left: 18px; right: 18px; bottom: 14px; height: 120px;
+  background: white;
+  border-radius: 6px 6px 4px 4px;
+  border: 1px solid #ffd3e3;
+  z-index: 2;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2rem;
+  transition: transform .85s cubic-bezier(.4,0,.2,1) .45s;
+}
+.env-letter.open { transform: translateY(-260px); }
+
+/* wax seal */
+.env-seal {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 2.2rem; z-index: 5; line-height: 1;
+  transition: opacity .25s, transform .25s;
+}
+.env-seal.hide { opacity: 0; transform: translate(-50%,-50%) scale(.4); }
+
+/* ── MISC ──────────────────────────────────────────────── */
+.hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }
+.heart { position: absolute; bottom: -40px; font-size: 1.2rem; opacity: .5; animation: float linear infinite; }
+@keyframes float { to { transform: translateY(-110vh) rotate(20deg); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .heart { display: none; }
+  .day.sel, .act.sel { transform: none; }
+}
+button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline-offset: 2px; }
+.hidden { display: none; }
+.note { font-size: .8rem; color: #b06a85; margin-top: 10px; text-align: center; word-break: break-all; }
+.error { font-size: .85rem; color: #b3261e; background: #fde8e6; border: 1px solid #f5c6c0; border-radius: 12px; padding: 10px 14px; margin-top: 12px; text-align: center; }
+.live-dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  background: #1e7a36; margin-right: 6px; animation: livepulse 1.6s infinite;
+}
+@keyframes livepulse { 50% { opacity: .3; } }
+.confetti-burst { animation: confettiBurst .6s ease; }
+@keyframes confettiBurst { 0%{transform:scale(1)} 50%{transform:scale(1.18)} 100%{transform:scale(1)} }
 </style>
 </head>
 <body>
 
 <div class="hearts" aria-hidden="true" id="hearts"></div>
 
-<!-- ===== NAČÍTÁNÍ ===== -->
+<!-- NAČÍTÁNÍ -->
 <div class="card" id="loading">
   <p class="sub" style="margin-top:40vh">Načítám… 💗</p>
 </div>
 
-<!-- ===== PLÁNOVAČ ===== -->
+<!-- OBÁLKA (příjemce) -->
+<div class="card hidden" id="envelopeView">
+  <h1 class="title" style="margin-bottom:8px">Máš poštu 💌</h1>
+  <p class="sub">Někdo ti poslal pozvánku na rande</p>
+  <div class="env-wrap" id="envWrap" role="button" aria-label="Otevřít pozvánku" tabindex="0">
+    <div class="env-body"></div>
+    <div class="env-letter" id="envLetter">💗</div>
+    <div class="env-flap" id="envFlap"></div>
+    <div class="env-seal" id="envSeal">💌</div>
+  </div>
+  <p class="envelope-hint">Klikni pro otevření</p>
+</div>
+
+<!-- PLÁNOVAČ -->
 <div class="card hidden" id="planner">
   <h1 class="title" id="plannerTitle">Naplánuj rande</h1>
   <p class="sub" id="plannerSub">Vyber datum, čas a aktivitu — pak pošli odkaz 💌</p>
@@ -170,43 +332,61 @@
   </section>
 
   <section class="section">
+    <h2 class="label">📍 Kde se uvidíme? <span style="font-size:.8rem;font-family:Quicksand;color:#b06a85;font-weight:500">(nepovinné)</span></h2>
+    <input class="input" style="margin-top:0" type="text" id="mistoInput" placeholder="Název restaurace, parku, adresy…">
+  </section>
+
+  <section class="section">
     <h2 class="label">✍️ Tvoje jméno <span style="font-size:.8rem;font-family:Quicksand;color:#b06a85;font-weight:500">(nepovinné)</span></h2>
     <input class="input" style="margin-top:0" type="text" id="nameInput" placeholder="Ať druhá strana ví, od koho návrh je">
   </section>
 
+  <section class="section">
+    <h2 class="label">💬 Osobní zpráva <span style="font-size:.8rem;font-family:Quicksand;color:#b06a85;font-weight:500">(nepovinné)</span></h2>
+    <textarea class="input" id="zpravaInput" placeholder="Napiš pár slov ze srdce…" maxlength="300"></textarea>
+  </section>
+
   <button class="cta" id="sendBtn" disabled>Vyber datum, čas a aktivitu</button>
-  <p class="note hidden" id="linkNote"></p>
+  <div id="successBox" class="hidden" style="margin-top:14px">
+    <p class="note" id="linkNote"></p>
+    <p class="share-label">Sdílet pozvánku</p>
+    <div class="share-btns" id="plannerShare"></div>
+    <button class="notify-btn" id="notifyBtn">🔔 Upozornit mě, až druhá strana odpoví</button>
+  </div>
   <p class="error hidden" id="plannerError"></p>
 </div>
 
-<!-- ===== POZVÁNKA / STAV RANDE ===== -->
+<!-- POZVÁNKA / STAV -->
 <div class="card hidden" id="inviteView">
-  <p class="sub" style="margin-bottom:10px"><span class="live-dot"></span>Sleduje se naživo — když druhá strana odpoví, uvidíš to hned</p>
-  <div class="invite" id="inviteBox">
-    <span class="big" id="invEmoji">💞</span>
-    <h2 id="invTitle">Návrh rande</h2>
-    <p class="detail" id="invAct"></p>
-    <p id="invDate"></p>
-    <p id="invTime"></p>
-    <span class="badge navrh" id="invBadge">čeká na odpověď</span>
+  <p class="sub" style="margin-bottom:10px"><span class="live-dot"></span>Živé sledování — odpověď uvidíš okamžitě</p>
+  <div class="letter-card" id="letterCard">
+    <p class="letter-salutation" id="invSalutation"></p>
+    <p class="letter-activity" id="invAct"></p>
+    <div class="letter-meta" id="invMeta"></div>
+    <blockquote class="letter-message hidden" id="invMessage"></blockquote>
+    <hr class="letter-divider">
+    <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+      <span class="badge" id="invBadge"></span>
+      <p class="letter-sign" id="invSign" style="margin:0"></p>
+    </div>
     <div class="row" id="actionRow">
       <button class="primary" id="confirmBtn">Jdu do toho! 💗</button>
       <button class="secondary" id="editBtn">✏️ Upravit podle sebe</button>
     </div>
   </div>
-  <div class="row">
+
+  <div class="row" style="margin-top:12px">
     <button class="secondary" id="icsBtn">📅 Uložit do kalendáře</button>
     <button class="secondary" id="newBtn">✨ Naplánovat jiné rande</button>
   </div>
+
+  <p class="share-label" id="shareInviteLabel">Sdílet pozvánku</p>
+  <div class="share-btns" id="inviteShare"></div>
+
   <p class="error hidden" id="inviteError"></p>
 </div>
 
 <script type="module">
-  /* ============================================================
-     1) Vlož sem svůj Firebase config:
-        console.firebase.google.com → projekt → ⚙️ Project settings
-        → Your apps → Web app (</>) → zkopíruj firebaseConfig
-     ============================================================ */
   const firebaseConfig = {
     apiKey: "AIzaSyB6VxL7p01MaUEF2wyd1PW_NKoMhN896k4",
     authDomain: "randio-app.firebaseapp.com",
@@ -233,20 +413,18 @@
     { id: "sport",   emoji: "🏸", label: "Sportovní rande" },
     { id: "gallery", emoji: "🖼️", label: "Galerie či muzeum" }
   ];
-  const TIMES = ["10:00","12:00","14:00","16:00","17:30","18:00","19:00","20:00"];
-  const DAYS = ["Ne","Po","Út","St","Čt","Pá","So"];
+  const TIMES  = ["10:00","12:00","14:00","16:00","17:30","18:00","19:00","20:00"];
+  const DAYS   = ["Ne","Po","Út","St","Čt","Pá","So"];
   const MONTHS_GEN = ["ledna","února","března","dubna","května","června","července","srpna","září","října","listopadu","prosince"];
   const MONTHS = ["Leden","Únor","Březen","Duben","Květen","Červen","Červenec","Srpen","Září","Říjen","Listopad","Prosinec"];
 
-  const $ = (id) => document.getElementById(id);
-  const pad = (n) => (n < 10 ? "0" + n : "" + n);
+  const $    = (id) => document.getElementById(id);
+  const pad  = (n) => (n < 10 ? "0" + n : "" + n);
   const fmtDate = (d) => `${DAYS[d.getDay()]} ${d.getDate()}. ${MONTHS_GEN[d.getMonth()]} ${d.getFullYear()}`;
   const findAct = (id) => ACTIVITIES.find((a) => a.id === id) || null;
   const baseUrl = () => location.origin + location.pathname;
-  const parseDate = (s) => {
-    const p = s.split("-").map(Number);
-    return new Date(p[0], p[1] - 1, p[2]);
-  };
+  const parseDate = (s) => { const p = s.split("-").map(Number); return new Date(p[0], p[1]-1, p[2]); };
+  const mapsUrl  = (place) => `https://maps.google.com/?q=${encodeURIComponent(place)}`;
 
   /* plovoucí srdíčka */
   {
@@ -263,110 +441,212 @@
     }
   }
 
+  /* ── sdílení odkazu ── */
+  function buildShareButtons(container, url, text) {
+    container.innerHTML = "";
+    const items = [
+      { label: "WhatsApp",  href: `https://api.whatsapp.com/send?text=${encodeURIComponent(text + " " + url)}`, em: "💬" },
+      { label: "Telegram",  href: `https://t.me/share/url?url=${encodeURIComponent(url)}&text=${encodeURIComponent(text)}`, em: "✈️" },
+      { label: "Facebook",  href: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`, em: "👍" },
+      { label: "X / Twitter", href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`, em: "🐦" },
+    ];
+    items.forEach(({ label, href, em }) => {
+      const a = document.createElement("a");
+      a.className = "share-btn";
+      a.href = href;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      a.innerHTML = `${em} ${label}`;
+      container.appendChild(a);
+    });
+    const copyBtn = document.createElement("button");
+    copyBtn.className = "share-btn";
+    copyBtn.innerHTML = "📋 Kopírovat";
+    copyBtn.addEventListener("click", () => {
+      navigator.clipboard?.writeText(url).then(() => {
+        copyBtn.innerHTML = "✓ Zkopírováno";
+        copyBtn.classList.add("copied");
+        setTimeout(() => { copyBtn.innerHTML = "📋 Kopírovat"; copyBtn.classList.remove("copied"); }, 2000);
+      });
+    });
+    container.appendChild(copyBtn);
+  }
+
   function shareLink(url, title, onDone) {
     if (navigator.share) {
       navigator.share({ title, url }).catch(() => {});
       onDone(url, true);
     } else if (navigator.clipboard?.writeText) {
-      navigator.clipboard.writeText(url)
-        .then(() => onDone(url, true))
-        .catch(() => onDone(url, false));
+      navigator.clipboard.writeText(url).then(() => onDone(url, true)).catch(() => onDone(url, false));
     } else {
       onDone(url, false);
     }
   }
 
+  /* ── ICS stažení ── */
   function downloadIcs(plan) {
     const dp = plan.datum.split("-").map(Number);
-    const t = plan.cas.split(":").map(Number);
+    const t  = plan.cas.split(":").map(Number);
     const start = `${dp[0]}${pad(dp[1])}${pad(dp[2])}T${pad(t[0])}${pad(t[1])}00`;
-    const end = `${dp[0]}${pad(dp[1])}${pad(dp[2])}T${pad((t[0] + 2) % 24)}${pad(t[1])}00`;
-    const label = (findAct(plan.aktivita)?.label || plan.aktivita).replace(/,/g, "\\,");
-    const ics = [
-      "BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//rande//CZ","BEGIN:VEVENT",
-      `UID:${Date.now()}@rande`,
-      `DTSTART:${start}`, `DTEND:${end}`,
-      `SUMMARY:Rande 💗 ${label}`,
-      "END:VEVENT","END:VCALENDAR"
-    ].join("\r\n");
-    const blob = new Blob([ics], { type: "text/calendar" });
+    const end   = `${dp[0]}${pad(dp[1])}${pad(dp[2])}T${pad((t[0]+2)%24)}${pad(t[1])}00`;
+    const label = (findAct(plan.aktivita)?.label || plan.aktivita).replace(/,/g,"\\,");
+    const loc   = plan.misto ? `\r\nLOCATION:${plan.misto.replace(/,/g,"\\,")}` : "";
+    const desc  = plan.zprava ? `\r\nDESCRIPTION:${plan.zprava.replace(/,/g,"\\,").replace(/\n/g,"\\n")}` : "";
+    const ics = ["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//rande//CZ","BEGIN:VEVENT",
+      `UID:${Date.now()}@rande`,`DTSTART:${start}`,`DTEND:${end}`,
+      `SUMMARY:Rande 💗 ${label}${loc}${desc}`,
+      "END:VEVENT","END:VCALENDAR"].join("\r\n");
     const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
+    a.href = URL.createObjectURL(new Blob([ics], { type:"text/calendar" }));
     a.download = "rande.ics";
     a.click();
     URL.revokeObjectURL(a.href);
   }
 
-  /* ====== Firebase init ====== */
-  let db = null;
-  let firebaseOk = false;
-  try {
-    if (!firebaseConfig.apiKey.startsWith("VLOZ_")) {
-      const app = initializeApp(firebaseConfig);
-      db = getFirestore(app);
-      firebaseOk = true;
-    }
-  } catch (e) {
-    console.error("Firebase init selhal:", e);
+  /* ── notifikace ── */
+  function requestNotifPermission(onGranted) {
+    if (!("Notification" in window)) return;
+    if (Notification.permission === "granted") { onGranted(); return; }
+    Notification.requestPermission().then((p) => { if (p === "granted") onGranted(); });
   }
 
-  const params = new URLSearchParams(location.search);
+  function showNotif(title, body) {
+    if (Notification.permission !== "granted") return;
+    new Notification(title, {
+      body,
+      icon: "https://martin0925.github.io/randio-app/og.svg"
+    });
+  }
+
+  /* ── Firebase init ── */
+  let db = null;
+  try {
+    const app = initializeApp(firebaseConfig);
+    db = getFirestore(app);
+  } catch (e) { console.error("Firebase init selhal:", e); }
+
+  const params  = new URLSearchParams(location.search);
   const randeId = params.get("id");
 
-  /* ============================================================
-     REŽIM POZVÁNKY — odkaz s ?id=..., živé sledování dokumentu
-     ============================================================ */
-  if (randeId && firebaseOk) {
+  /* ══════════════════════════════════════════
+     REŽIM POZVÁNKY  (?id=...)
+  ══════════════════════════════════════════ */
+  if (randeId && db) {
     const ref = doc(db, "rande", randeId);
     let currentPlan = null;
-    let unsubscribed = false;
+    let prevStav    = null;
+    let envelopeOpened = false;
+    const isCreator = localStorage.getItem(`creator_${randeId}`) === "1";
 
-    function renderPlan(data) {
+    function renderInvite(data) {
       currentPlan = data;
-      $("loading").classList.add("hidden");
-      $("inviteView").classList.remove("hidden");
-
       const known = findAct(data.aktivita);
       const label = known ? known.label : data.aktivita;
-      $("invEmoji").textContent = known ? known.emoji : "💞";
-      $("invAct").textContent = label;
-      $("invDate").textContent = "📅 " + fmtDate(parseDate(data.datum));
-      $("invTime").textContent = "🕐 " + data.cas;
+      const emoji = known ? known.emoji : "💞";
 
-      const badge = $("invBadge");
-      const box = $("inviteBox");
+      document.title = data.stav === "potvrzeno" ? "Rande potvrzeno! 🎉" : "Pozvánka na rande 💗";
+
+      $("invSalutation").textContent = data.od
+        ? `Milá/ý, ${data.od} tě zve na rande!`
+        : "Milá/ý, někdo tě zve na rande!";
+
+      $("invAct").innerHTML = `<span class="em">${emoji}</span>${label}`;
+
+      const meta = $("invMeta");
+      meta.innerHTML = "";
+      const rows = [
+        ["📅", fmtDate(parseDate(data.datum))],
+        ["🕐", data.cas],
+      ];
+      if (data.misto) rows.push(["📍", `<a href="${mapsUrl(data.misto)}" target="_blank" rel="noopener">${data.misto}</a>`]);
+      rows.forEach(([icon, val]) => {
+        const d = document.createElement("div");
+        d.className = "letter-meta-row";
+        d.innerHTML = `<strong>${icon}</strong><span>${val}</span>`;
+        meta.appendChild(d);
+      });
+
+      const msgEl = $("invMessage");
+      if (data.zprava) {
+        msgEl.textContent = `„${data.zprava}"`;
+        msgEl.classList.remove("hidden");
+      } else {
+        msgEl.classList.add("hidden");
+      }
+
+      const sign = $("invSign");
+      sign.textContent = data.od ? `— ${data.od}` : "";
+
+      const badge   = $("invBadge");
       const actions = $("actionRow");
+      const card    = $("letterCard");
 
       if (data.stav === "potvrzeno") {
-        document.title = "Rande potvrzeno! 🎉";
-        $("invEmoji").textContent = "🎉";
-        $("invTitle").textContent = data.potvrdil
-          ? `${data.potvrdil} jde do toho!`
-          : "Rande je potvrzené!";
         badge.textContent = "potvrzeno ✓";
         badge.className = "badge potvrzeno";
-        box.classList.add("confirmed");
         actions.classList.add("hidden");
+        card.classList.add("confetti-burst");
+        if (data.potvrdil) {
+          $("invSalutation").textContent = `${data.potvrdil} jde do toho! 🎉`;
+        }
       } else {
-        document.title = "Pozvánka na rande 💗";
-        $("invTitle").textContent = data.od
-          ? `${data.od} tě zve na rande!`
-          : "Návrh rande pro tebe!";
         badge.textContent = data.stav === "protinavrh" ? "protinávrh — čeká na odpověď" : "čeká na odpověď";
         badge.className = "badge " + (data.stav === "protinavrh" ? "protinavrh" : "navrh");
-        box.classList.remove("confirmed");
         actions.classList.remove("hidden");
       }
+
+      const invUrl = `${baseUrl()}?id=${randeId}`;
+      const shareText = data.od
+        ? `${data.od} tě zve na rande — ${label}`
+        : `Máš pozvánku na rande — ${label}`;
+      buildShareButtons($("inviteShare"), invUrl, shareText);
+      $("shareInviteLabel").textContent = data.stav === "potvrzeno" ? "Sdílet rande" : "Sdílet pozvánku";
+    }
+
+    function openEnvelope() {
+      if (envelopeOpened) return;
+      envelopeOpened = true;
+      const seal  = $("envSeal");
+      const flap  = $("envFlap");
+      const letter = $("envLetter");
+      seal.classList.add("hide");
+      setTimeout(() => flap.classList.add("open"), 160);
+      setTimeout(() => letter.classList.add("open"), 760);
+      setTimeout(() => {
+        $("envelopeView").classList.add("hidden");
+        $("inviteView").classList.remove("hidden");
+        /* požádat o notifikace pro toho, kdo sleduje */
+        if (Notification.permission === "default") {
+          Notification.requestPermission();
+        }
+      }, 1550);
     }
 
     onSnapshot(ref, (snap) => {
+      $("loading").classList.add("hidden");
+
       if (!snap.exists()) {
-        $("loading").classList.add("hidden");
         $("inviteView").classList.remove("hidden");
-        $("inviteBox").innerHTML = "<span class='big'>🥀</span><h2>Tohle rande nebylo nalezeno</h2><p>Odkaz je možná neúplný nebo bylo rande smazáno.</p>";
+        $("letterCard").innerHTML = "<span style='font-size:2rem'>🥀</span><h2 style='font-family:Cormorant Garamond,serif;color:#a8244e'>Rande nebylo nalezeno</h2><p>Odkaz je neúplný nebo bylo rande smazáno.</p>";
         return;
       }
-      renderPlan(snap.data());
+
+      const data = snap.data();
+
+      /* notifikace při změně stavu */
+      if (prevStav !== null && prevStav !== "potvrzeno" && data.stav === "potvrzeno") {
+        showNotif("Rande potvrzeno! 🎉", data.potvrdil ? `${data.potvrdil} jde do toho!` : "Druhá strana potvrdila!");
+      }
+      prevStav = data.stav;
+
+      renderInvite(data);
+
+      /* tvůrce pozvánky — přeskočí obálku a jde rovnou na stav */
+      if (isCreator) {
+        $("inviteView").classList.remove("hidden");
+      } else if (!envelopeOpened) {
+        $("envelopeView").classList.remove("hidden");
+      }
     }, (err) => {
       $("loading").classList.add("hidden");
       $("inviteView").classList.remove("hidden");
@@ -375,15 +655,20 @@
       e.classList.remove("hidden");
     });
 
+    /* kliknutí na obálku */
+    const envWrap = $("envWrap");
+    envWrap.addEventListener("click", openEnvelope);
+    envWrap.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") openEnvelope(); });
+
+    /* potvrzení */
     $("confirmBtn").addEventListener("click", async () => {
-      const who = prompt("Tvoje jméno? (nepovinné — jen ať druhá strana ví, kdo potvrdil)") || "";
+      const who = prompt("Tvoje jméno? (nepovinné)") ?? "";
       try {
         await updateDoc(ref, {
           stav: "potvrzeno",
           potvrdil: who.trim(),
           potvrzeno_kdy: serverTimestamp()
         });
-        /* onSnapshot překreslí UI sám */
       } catch (err) {
         const e = $("inviteError");
         e.textContent = "Potvrzení se nepodařilo uložit: " + err.message;
@@ -399,21 +684,18 @@
 
     $("icsBtn").addEventListener("click", () => currentPlan && downloadIcs(currentPlan));
     $("newBtn").addEventListener("click", () => { location.href = baseUrl(); });
-  }
-  /* id v URL, ale Firebase nenastaven */
-  else if (randeId && !firebaseOk) {
+
+  } else if (randeId && !db) {
     $("loading").classList.add("hidden");
     $("inviteView").classList.remove("hidden");
-    $("inviteBox").innerHTML = "<span class='big'>⚙️</span><h2>Aplikace není nastavená</h2><p>Do index.html je potřeba vložit Firebase config.</p>";
-  }
-  /* ============================================================
-     REŽIM PLÁNOVAČE — prázdný odkaz
-     ============================================================ */
-  else {
+    $("letterCard").innerHTML = "<span style='font-size:2rem'>⚙️</span><h2 style='font-family:Cormorant Garamond,serif;color:#a8244e'>Aplikace není nastavená</h2><p>Do index.html je potřeba vložit Firebase config.</p>";
+  } else {
     initPlanner({});
   }
 
-  /* ====== PLÁNOVAČ (nový návrh i protinávrh) ====== */
+  /* ══════════════════════════════════════════
+     PLÁNOVAČ
+  ══════════════════════════════════════════ */
   function initPlanner({ editDoc = null, prefill = null }) {
     $("loading").classList.add("hidden");
     $("planner").classList.remove("hidden");
@@ -422,41 +704,37 @@
       $("plannerTitle").textContent = "Uprav rande podle sebe";
       $("plannerSub").textContent = "Změň, co se ti nehodí, a odešli protinávrh 💌";
     }
-    if (!firebaseOk) {
+    if (!db) {
       const e = $("plannerError");
-      e.textContent = "⚙️ Firebase config zatím není vyplněný — návrhy nepůjde uložit. Vlož config do index.html.";
+      e.textContent = "⚙️ Firebase config zatím není vyplněný — návrhy nepůjde uložit.";
       e.classList.remove("hidden");
     }
 
-    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const today = new Date(); today.setHours(0,0,0,0);
     const sel = { date: null, time: null, customTime: "", act: null, customAct: "" };
 
     if (prefill) {
       const d = parseDate(prefill.datum);
       if (d >= today) sel.date = d;
-      if (TIMES.includes(prefill.cas)) sel.time = prefill.cas;
-      else sel.customTime = prefill.cas;
-      if (findAct(prefill.aktivita)) sel.act = prefill.aktivita;
-      else sel.customAct = prefill.aktivita;
+      if (TIMES.includes(prefill.cas)) sel.time = prefill.cas; else sel.customTime = prefill.cas;
+      if (findAct(prefill.aktivita)) sel.act = prefill.aktivita; else sel.customAct = prefill.aktivita;
+      if (prefill.misto) $("mistoInput").value = prefill.misto;
+      if (prefill.zprava) $("zpravaInput").value = prefill.zprava;
+      if (prefill.od) $("nameInput").value = prefill.od;
     }
 
-    const view = {
-      y: (sel.date || today).getFullYear(),
-      m: (sel.date || today).getMonth()
-    };
+    const view = { y: (sel.date || today).getFullYear(), m: (sel.date || today).getMonth() };
 
     function renderCal() {
       $("calTitle").textContent = `${MONTHS[view.m]} ${view.y}`;
       const grid = $("calGrid");
       grid.innerHTML = "";
       ["Po","Út","St","Čt","Pá","So","Ne"].forEach((d) => {
-        const s = document.createElement("span");
-        s.className = "dow"; s.textContent = d;
-        grid.appendChild(s);
+        const s = document.createElement("span"); s.className = "dow"; s.textContent = d; grid.appendChild(s);
       });
-      const first = new Date(view.y, view.m, 1);
+      const first  = new Date(view.y, view.m, 1);
       const offset = (first.getDay() + 6) % 7;
-      const dim = new Date(view.y, view.m + 1, 0).getDate();
+      const dim    = new Date(view.y, view.m+1, 0).getDate();
       for (let i = 0; i < offset; i++) grid.appendChild(document.createElement("span"));
       for (let d = 1; d <= dim; d++) {
         const date = new Date(view.y, view.m, d);
@@ -470,44 +748,38 @@
     }
 
     function renderTimes() {
-      const box = $("timeChips");
-      box.innerHTML = "";
+      const box = $("timeChips"); box.innerHTML = "";
       TIMES.forEach((t) => {
         const b = document.createElement("button");
         b.className = "chip" + (!sel.customTime && sel.time === t ? " sel" : "");
         b.textContent = t;
         b.addEventListener("click", () => {
-          sel.time = t; sel.customTime = ""; $("customTime").value = "";
-          renderTimes(); update();
+          sel.time = t; sel.customTime = ""; $("customTime").value = ""; renderTimes(); update();
         });
         box.appendChild(b);
       });
     }
 
     function renderActs() {
-      const box = $("actGrid");
-      box.innerHTML = "";
+      const box = $("actGrid"); box.innerHTML = "";
       ACTIVITIES.forEach((a) => {
-        const b = document.createElement("button");
+        const b  = document.createElement("button");
         b.className = "act" + (!sel.customAct.trim() && sel.act === a.id ? " sel" : "");
-        const em = document.createElement("span");
-        em.className = "em"; em.textContent = a.emoji;
-        b.appendChild(em);
-        b.appendChild(document.createTextNode(a.label));
+        const em = document.createElement("span"); em.className = "em"; em.textContent = a.emoji;
+        b.appendChild(em); b.appendChild(document.createTextNode(a.label));
         b.addEventListener("click", () => {
-          sel.act = a.id; sel.customAct = ""; $("customAct").value = "";
-          renderActs(); update();
+          sel.act = a.id; sel.customAct = ""; $("customAct").value = ""; renderActs(); update();
         });
         box.appendChild(b);
       });
     }
 
     const chosenTime = () => sel.customTime || sel.time;
-    const chosenAct = () => sel.customAct.trim() || sel.act;
+    const chosenAct  = () => sel.customAct.trim() || sel.act;
 
     function update() {
-      const ready = sel.date && chosenTime() && chosenAct() && firebaseOk;
-      const btn = $("sendBtn");
+      const ready = sel.date && chosenTime() && chosenAct() && !!db;
+      const btn   = $("sendBtn");
       btn.disabled = !ready;
       btn.textContent = sel.date && chosenTime() && chosenAct()
         ? (editDoc ? "Odeslat protinávrh 💌" : "Vytvořit a poslat návrh 💌")
@@ -515,7 +787,7 @@
     }
 
     if (sel.customTime) $("customTime").value = sel.customTime;
-    if (sel.customAct) $("customAct").value = sel.customAct;
+    if (sel.customAct)  $("customAct").value  = sel.customAct;
 
     $("customTime").addEventListener("input", (e) => {
       sel.customTime = e.target.value; sel.time = null; renderTimes(); update();
@@ -524,53 +796,82 @@
       sel.customAct = e.target.value; sel.act = null; renderActs(); update();
     });
     $("prevM").addEventListener("click", () => {
-      if (view.m === 0) { view.y--; view.m = 11; } else view.m--;
-      renderCal();
+      if (view.m === 0) { view.y--; view.m = 11; } else view.m--; renderCal();
     });
     $("nextM").addEventListener("click", () => {
-      if (view.m === 11) { view.y++; view.m = 0; } else view.m++;
-      renderCal();
+      if (view.m === 11) { view.y++; view.m = 0; } else view.m++; renderCal();
     });
 
     $("sendBtn").addEventListener("click", async () => {
       const d = sel.date;
       const plan = {
-        datum: `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`,
-        cas: chosenTime(),
+        datum:    `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`,
+        cas:      chosenTime(),
         aktivita: chosenAct(),
-        od: $("nameInput").value.trim()
+        od:       $("nameInput").value.trim(),
+        misto:    $("mistoInput").value.trim(),
+        zprava:   $("zpravaInput").value.trim(),
       };
-      const note = $("linkNote");
       const err = $("plannerError");
       err.classList.add("hidden");
 
       try {
         if (editDoc) {
-          /* protinávrh: aktualizace stejného dokumentu — odkaz se nemění! */
           await updateDoc(editDoc, {
             ...plan,
             stav: "protinavrh",
             upraveno_kdy: serverTimestamp()
           });
-          note.textContent = "Protinávrh uložen ✓ Druhá strana ho uvidí na stejném odkazu — ale klidně jí dej vědět 😉";
-          note.classList.remove("hidden");
+          $("successBox").classList.remove("hidden");
+          $("linkNote").textContent = "Protinávrh uložen ✓ Druhá strana ho uvidí na stejném odkazu.";
           $("sendBtn").textContent = "Protinávrh odeslán ✓";
           $("sendBtn").disabled = true;
           setTimeout(() => { location.reload(); }, 2500);
         } else {
-          /* nový návrh: vytvoření dokumentu a sdílení krátkého odkazu */
           const docRef = await addDoc(collection(db, "rande"), {
             ...plan,
-            stav: "navrh",
+            stav:      "navrh",
             vytvoreno: serverTimestamp()
           });
-          const url = `${baseUrl()}?id=${docRef.id}`;
+
+          /* ulož příznak tvůrce — přeskočí obálku na vlastní odkazu */
+          localStorage.setItem(`creator_${docRef.id}`, "1");
+
+          const url        = `${baseUrl()}?id=${docRef.id}`;
+          const shareText  = plan.od ? `${plan.od} tě zve na rande!` : "Pozvi svou lásku na rande 💗";
+
+          $("successBox").classList.remove("hidden");
+          $("sendBtn").textContent = "Návrh vytvořen ✓";
+          $("sendBtn").disabled = true;
+
           shareLink(url, "Návrh rande 💗", (u, copied) => {
-            note.textContent = copied
-              ? `Odkaz je ve schránce — pošli ho 💗 Ty sám si ho ulož taky: uvidíš na něm, až druhá strana odpoví. ${u}`
-              : `Zkopíruj a pošli (a ulož si ho i pro sebe): ${u}`;
-            note.classList.remove("hidden");
-            $("sendBtn").textContent = "Návrh vytvořen ✓";
+            $("linkNote").textContent = copied
+              ? `Odkaz zkopírován — pošli ho 💗 Ulož si ho i ty: uvidíš, až druhá strana odpoví. ${u}`
+              : `Zkopíruj a pošli: ${u}`;
+          });
+
+          buildShareButtons($("plannerShare"), url, shareText);
+
+          /* notifikace — sledovat dokument v pozadí */
+          const notifyBtn = $("notifyBtn");
+          notifyBtn.addEventListener("click", () => {
+            requestNotifPermission(() => {
+              notifyBtn.textContent = "🔔 Oznámení zapnutá ✓";
+              notifyBtn.classList.add("on");
+              notifyBtn.disabled = true;
+              let firstSnap = true;
+              onSnapshot(docRef, (snap) => {
+                if (firstSnap) { firstSnap = false; return; }
+                if (!snap.exists()) return;
+                const s = snap.data().stav;
+                if (s === "potvrzeno") {
+                  const kdo = snap.data().potvrdil;
+                  showNotif("Rande potvrzeno! 🎉", kdo ? `${kdo} jde do toho!` : "Druhá strana potvrdila!");
+                } else if (s === "protinavrh") {
+                  showNotif("Protinávrh 📩", "Druhá strana upravila datum nebo aktivitu.");
+                }
+              });
+            });
           });
         }
       } catch (e2) {
