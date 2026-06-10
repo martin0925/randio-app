@@ -1,0 +1,145 @@
+/* ── ADMIN LOGIN ─────────────────────────────────────────── */
+.admin-login {
+  display: flex; flex-direction: column; align-items: center;
+  padding: 48px 24px 32px; text-align: center;
+}
+.admin-login-icon { font-size: 3rem; margin-bottom: 4px; }
+
+.google-btn {
+  display: flex; align-items: center; gap: 10px;
+  background: #fff; border: 1px solid #dadce0;
+  border-radius: 999px; padding: 12px 22px;
+  font-family: inherit; font-size: .95rem; font-weight: 600;
+  color: #3c4043; cursor: pointer;
+  box-shadow: 0 1px 3px rgba(0,0,0,.12);
+  transition: background .15s, box-shadow .15s;
+  margin-top: 12px;
+}
+.google-btn:hover { background: #f8f9fa; box-shadow: 0 2px 6px rgba(0,0,0,.15); }
+
+.back-link {
+  display: inline-block; margin-top: 20px;
+  font-size: .88rem; color: #b06a85; text-decoration: none; font-weight: 600;
+}
+.back-link:hover { text-decoration: underline; }
+
+/* ── ADMIN LAYOUT ────────────────────────────────────────── */
+.admin-view { padding-bottom: 32px; }
+
+.admin-header {
+  display: flex; align-items: center; gap: 12px;
+  padding: 16px 0 20px;
+  border-bottom: 1px solid #ffd1e0; margin-bottom: 0;
+}
+.admin-avatar {
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 2px solid #ffc3d8; flex-shrink: 0;
+}
+.admin-user-info { flex: 1; min-width: 0; }
+.admin-name {
+  display: block; font-weight: 700; font-size: .95rem;
+  color: #a8244e; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.admin-email {
+  display: block; font-size: .78rem; color: #b06a85;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.admin-signout {
+  flex-shrink: 0; border: 1px solid #ffc3d8; background: #fff7fa;
+  color: #a8244e; border-radius: 999px; padding: 7px 14px;
+  font-family: inherit; font-size: .82rem; font-weight: 600; cursor: pointer;
+}
+.admin-signout:hover { background: #ffe6ef; }
+
+/* ── TABS ────────────────────────────────────────────────── */
+.admin-tabs {
+  display: flex; gap: 6px; margin: 18px 0 20px;
+}
+.admin-tab {
+  flex: 1; border: 1px solid #ffc3d8; background: #fff7fa;
+  border-radius: 14px; padding: 10px 6px; font-family: inherit;
+  font-size: .84rem; font-weight: 600; color: #b06a85; cursor: pointer;
+  transition: background .15s;
+}
+.admin-tab:hover { background: #ffe6ef; }
+.admin-tab.active { background: #d8366c; border-color: #d8366c; color: #fff; }
+
+/* ── PREFERENCES ─────────────────────────────────────────── */
+.admin-prefs { display: flex; flex-direction: column; gap: 4px; }
+
+.pref-section {
+  background: rgba(255,253,254,.85); border: 1px solid #ffd1e0;
+  border-radius: 16px; padding: 16px; margin-bottom: 12px;
+}
+.pref-label {
+  display: block; font-family: 'Cormorant Garamond', serif;
+  font-size: 1.1rem; font-weight: 600; color: #a8244e; margin-bottom: 4px;
+}
+.pref-hint { font-size: .78rem; color: #b06a85; margin: 0 0 10px; }
+
+.pref-radio-group { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.pref-radio {
+  border: 1px solid #ffc3d8; background: #fff7fa; color: #5a2438;
+  border-radius: 999px; padding: 8px 16px; font-family: inherit;
+  font-size: .85rem; font-weight: 600; cursor: pointer;
+  transition: background .15s;
+}
+.pref-radio:hover { background: #ffe6ef; }
+.pref-radio.sel { background: #d8366c; border-color: #d8366c; color: #fff; }
+
+.pref-acts { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 8px; margin-top: 10px; }
+.pref-act {
+  border: 1px solid #ffc3d8; background: #fff7fa; border-radius: 12px;
+  padding: 10px 8px; font-family: inherit; font-size: .8rem; font-weight: 500;
+  color: #5a2438; cursor: pointer; text-align: center;
+  transition: background .15s, transform .15s;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.pref-act:hover { background: #ffe6ef; }
+.pref-act.sel { background: #d8366c; border-color: #d8366c; color: #fff; transform: translateY(-2px); }
+.pref-act span { font-size: 1.4rem; }
+
+/* ── INVITE LIST ─────────────────────────────────────────── */
+.invite-list { display: flex; flex-direction: column; gap: 10px; }
+
+.invite-item {
+  background: rgba(255,253,254,.9); border: 1px solid #ffd1e0;
+  border-radius: 16px; padding: 14px 16px;
+}
+.invite-item-top {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap; margin-bottom: 8px;
+}
+.invite-activity { font-weight: 700; font-size: .95rem; color: #5a2438; }
+.invite-item-bottom {
+  display: flex; align-items: center; gap: 10px;
+  flex-wrap: wrap; font-size: .82rem; color: #b06a85;
+}
+.invite-komu { color: #a8244e; font-weight: 600; }
+.invite-link {
+  margin-left: auto; color: #c2185b; font-weight: 700;
+  text-decoration: none; font-size: .84rem;
+}
+.invite-link:hover { text-decoration: underline; }
+
+.invite-empty {
+  text-align: center; padding: 40px 20px;
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  color: #b06a85;
+}
+.invite-empty span { font-size: 2.5rem; }
+.invite-empty p { margin: 0; font-size: .92rem; }
+
+/* ── PLANNER FOOTER ──────────────────────────────────────── */
+.planner-footer {
+  text-align: center; margin-top: 24px; padding-top: 16px;
+  border-top: 1px dashed #ffd1e0;
+}
+.admin-link {
+  font-size: .82rem; color: #b06a85; text-decoration: none;
+  font-weight: 600; padding: 6px 14px; border-radius: 999px;
+  border: 1px solid #ffd1e0; background: rgba(255,255,255,.6);
+  transition: background .15s;
+  display: inline-block;
+}
+.admin-link:hover { background: #ffe6ef; }

@@ -1,6 +1,7 @@
-import { useState, useEffect } from 'react'
-import { collection, addDoc, updateDoc, serverTimestamp } from 'firebase/firestore'
-import { db } from '../firebase'
+import { useState, useEffect, useRef } from 'react'
+import { collection, addDoc, updateDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore'
+import { onAuthStateChanged } from 'firebase/auth'
+import { db, auth } from '../firebase'
 import { ACTIVITIES, TIMES, DAYS, MONTHS_GEN, MONTHS } from '../constants'
 import { pad, fmtD, parseDate, findAct, baseUrl } from '../utils'
 import ShareButtons from './ShareButtons'
@@ -48,6 +49,23 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   }
 
   const [state, setState] = useState(initState)
+  const currentUserRef = useRef(auth.currentUser)
+
+  useEffect(() => {
+    return onAuthStateChanged(auth, async (user) => {
+      currentUserRef.current = user
+      if (editDoc || !user) return
+      const snap = await getDoc(doc(db, 'users', user.uid))
+      if (!snap.exists()) return
+      const prefs = snap.data()
+      setState((s) => ({
+        ...s,
+        od:   s.od   || prefs.jmeno            || '',
+        komu: s.komu || prefs.jmeno_partnera   || '',
+      }))
+    })
+  }, [editDoc])
+
   const [success, setSuccess] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [shareUrl, setShareUrl] = useState(null)
@@ -132,6 +150,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           ...plan,
           stav: 'navrh',
           vytvoreno: serverTimestamp(),
+          ...(currentUserRef.current ? { uid: currentUserRef.current.uid } : {}),
         })
         localStorage.setItem(`creator_${docRef.id}`, '1')
         const url = `${baseUrl()}?id=${docRef.id}`
@@ -346,6 +365,14 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       )}
 
       {error && <p className="error">{error}</p>}
+
+      {!editDoc && (
+        <div className="planner-footer">
+          <a href={`${baseUrl()}?admin`} className="admin-link">
+            ⚙️ {currentUserRef.current ? (currentUserRef.current.displayName?.split(' ')[0] || 'Účet') : 'Přihlásit se'}
+          </a>
+        </div>
+      )}
     </>
   )
 }
