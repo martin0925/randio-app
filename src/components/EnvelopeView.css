@@ -7,154 +7,172 @@
 
 .envelope-hint {
   color: #b06a85; font-size: .92rem; margin-top: 18px;
-  min-height: 1.4em; animation: pulse 1.8s infinite;
+  min-height: 1.4em;
+  animation: hintPulse 2s ease-in-out infinite;
   transition: opacity .4s;
 }
-.envelope-hint.faded { opacity: 0; }
+.envelope-hint.faded { opacity: 0; animation: none; }
 
-/* ── SCENE: coordinate space for all envelope layers ──────── */
+@keyframes hintPulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: .45; }
+}
+
+/* ── SCENE ───────────────────────────────────────────────── */
 /*
-  Layout (scene = 360px tall, envelope = 200px):
-  ┌──────────────────────────┐ ← scene top (0px)
+  scene: 300 × 360
+  ┌──────────────────────────┐ 0
   │   160px  rise space      │
-  ├──────────────────────────┤ ← envelope top (160px) = flap top
-  │  106px   flap area       │   z-index 4 (flap), covers letter initially
-  ├──────────────────────────┤ ← flap bottom / fold area (266px)
-  │   94px   body lower      │   z-index 3 (env-shell SVG)
-  └──────────────────────────┘ ← scene bottom (360px)
+  ├──────────────────────────┤ 160  ← envelope top = flap hinge
+  │          envelope        │
+  └──────────────────────────┘ 360
 
-  Letter (z-index 2) starts at bottom: 14px, height: 155px
-    → top: 191px  (inside envelope, under flap) ✓
-    → bottom: 346px
-  When .open → translateY(-168px)
-    → top: 23px   (well above envelope)
-    → bottom: 178px (17px overlap with envelope top = "coming out" effect) ✓
+  Vrstvy (zdola nahoru):
+    1  env-back   – zadní stěna + vnitřek obálky
+    2  env-letter – dopis (MEZI zadní stěnou a přední kapsou!)
+    3  env-front  – přední kapsa (boční + spodní sklady)
+    4  env-flap   – klopa (po otevření klesne na z-index 1, dopis jede před ní)
+    6  env-seal   – pečeť
 
-  Z-index order:
-    2 letter  < 3 env-shell < 4 flap < 5 seal
-  Result:
-    • Flap covers letter when closed ✓
-    • Envelope body hides bottom of letter when it's inside ✓
-    • Risen letter is above envelope body (no overlap outside envelope area) ✓
-    • Bottom ~17px of risen letter overlaps envelope top → looks like emerging ✓
+  Díky sendviči back < letter < front dopis opravdu VYJÍŽDÍ
+  ze štěrbiny obálky: jeho spodek zůstává schovaný za kapsou.
 */
 .env-scene {
   position: relative;
   width: 100%; max-width: 300px; height: 360px;
   margin: 0 auto; cursor: pointer;
-}
-.env-scene:hover .env-shell {
-  filter: drop-shadow(0 14px 32px rgba(194,24,91,.32));
+  perspective: 800px;          /* společná perspektiva pro 3D klopu */
 }
 
 @media (max-width: 340px) {
-  /* Scale: 260/300 ≈ 0.867 */
-  .env-scene { max-width: 260px; height: 312px; }
+  .env-scene { max-width: 260px; height: 312px; } /* scale ≈ 0.867 */
 }
 
-/* ── ENVELOPE BODY + DROP SHADOW ─────────────────────────── */
-/* drop-shadow filter here creates a stacking context for just the SVG.
-   Sibling elements (letter, flap, seal) are NOT affected by this filter. */
-.env-shell {
+/* ── ZADNÍ STĚNA + VNITŘEK ───────────────────────────────── */
+.env-back {
   position: absolute;
   bottom: 0; left: 0; right: 0; height: 200px;
-  z-index: 3;
-  filter: drop-shadow(0 8px 26px rgba(194,24,91,.2));
-  transition: filter .2s;
+  z-index: 1;
+  filter: drop-shadow(0 10px 28px rgba(194, 24, 91, .22));
+  /* žádné hover přechody filtru – zdroj problikávání */
 }
-.env-shell svg { display: block; width: 100%; height: 100%; }
+.env-back svg { display: block; width: 100%; height: 100%; }
 
-@media (max-width: 340px) { .env-shell { height: 174px; } }
+@media (max-width: 340px) { .env-back { height: 174px; } }
 
-/* ── LETTER ──────────────────────────────────────────────── */
+/* ── DOPIS (mezi zadní stěnou a kapsou) ──────────────────── */
 .env-letter {
   position: absolute;
-  left: 22px; right: 22px;
-  bottom: 14px; height: 155px;
+  left: 24px; right: 24px;
+  bottom: 12px; height: 152px;
   z-index: 2;
-  background: linear-gradient(168deg, #fffcfd 0%, #fff5f8 100%);
+  background: linear-gradient(168deg, #fffdfe 0%, #fff4f8 100%);
   border: 1px solid #ffd3e3;
-  border-radius: 8px 8px 5px 5px;
+  border-radius: 6px;
+  box-shadow: 0 2px 10px rgba(194, 24, 91, .10);
   display: flex; flex-direction: column;
   align-items: center; justify-content: center; gap: 10px;
   padding: 14px;
-  /* No transition initially — starts moving only once .open is set */
-  transition: transform .72s cubic-bezier(.22, 1, .36, 1);
+  will-change: transform;
+  transition: transform .8s cubic-bezier(.3, 1.25, .45, 1); /* jemný overshoot */
 }
 
 .env-letter.open {
-  transform: translateY(-168px);
+  transform: translateY(-170px);
 }
 
 @media (max-width: 340px) {
-  .env-letter { left: 18px; right: 18px; height: 134px; bottom: 12px; }
-  .env-letter.open { transform: translateY(-145px); }
+  .env-letter { left: 20px; right: 20px; height: 130px; bottom: 11px; }
+  .env-letter.open { transform: translateY(-147px); }
 }
 
-.env-letter-icon {
-  font-size: 2rem; line-height: 1; display: block;
-}
-.env-letter-lines {
-  width: 66%; display: flex; flex-direction: column; gap: 6px;
-}
-.env-letter-lines div {
-  height: 2px; background: #ffd3e3; border-radius: 2px;
-}
+.env-letter-icon { font-size: 2rem; line-height: 1; display: block; }
+.env-letter-lines { width: 66%; display: flex; flex-direction: column; gap: 6px; }
+.env-letter-lines div { height: 2px; background: #ffd3e3; border-radius: 2px; }
 .env-letter-lines div:nth-child(2) { width: 78%; align-self: flex-end; }
 .env-letter-lines div:nth-child(3) { width: 55%; }
 
-/* ── FLAP ────────────────────────────────────────────────── */
-/* Positioned at the top of the envelope area.
-   Envelope top = scene height − env height = 360 − 200 = 160px from scene top. */
+/* ── PŘEDNÍ KAPSA (sklady) ───────────────────────────────── */
+.env-front {
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 200px;
+  z-index: 3;
+  pointer-events: none;        /* klikání jde skrz na scénu */
+}
+.env-front svg { display: block; width: 100%; height: 100%; }
+
+@media (max-width: 340px) { .env-front { height: 174px; } }
+
+/* ── KLOPA ───────────────────────────────────────────────── */
+/* Pant klopy = horní hrana obálky (360 − 200 = 160).
+   1px překryv, aby mezi klopou a tělem nevznikala světlá spára. */
 .env-flap {
   position: absolute;
-  top: 160px; left: 0; right: 0; height: 106px;
-  background: #ffc3d8;
-  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  top: 159px; left: 0; right: 0; height: 108px;
   z-index: 4;
   transform-origin: 50% 0%;
-  transition: transform .65s cubic-bezier(.4, 0, .2, 1);
   transform-style: preserve-3d;
+  will-change: transform;
+  transition: transform .65s cubic-bezier(.4, 0, .2, 1);
+  pointer-events: none;
 }
 .env-flap.open {
-  transform: perspective(600px) rotateX(-180deg);
+  transform: rotateX(-180deg);
+  z-index: 1;                  /* po otevření za dopis i za kapsu */
 }
-/* Inner (back) face — visible briefly when flap is mid-rotation */
+
+/* přední strana klopy */
+.env-flap::before {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, #ffcadd 0%, #ffb9d1 100%);
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  backface-visibility: hidden;
+}
+/* rub klopy (podšívka s puntíky) – viditelný po překlopení */
 .env-flap::after {
   content: ''; position: absolute; inset: 0;
-  background: linear-gradient(180deg, #ffe6ef 0%, #ffd3e3 100%);
+  background:
+    radial-gradient(circle at 8px 8px, #ffc3d8 2px, transparent 2.5px) 0 0 / 26px 26px,
+    linear-gradient(180deg, #ffeef4 0%, #ffe1ec 100%);
   clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+  transform: rotateX(180deg);
   backface-visibility: hidden;
 }
 
 @media (max-width: 340px) {
-  /* Envelope top = 312 − 174 = 138px */
-  .env-flap { top: 138px; height: 92px; }
+  .env-flap { top: 137px; height: 94px; } /* 312 − 174 = 138, −1px překryv */
 }
 
-/* ── WAX SEAL ────────────────────────────────────────────── */
-/* Centered on the flap: top = envelope_top + flap_height/2 = 160 + 53 = 213px */
+/* ── PEČEŤ ───────────────────────────────────────────────── */
+/* Pozicování a mizení řeší vnější prvek, pulz vnitřní —
+   transformace se tak nehádají (další zdroj blikání). */
 .env-seal {
   position: absolute;
-  top: 213px; left: 50%;
+  top: 212px; left: 50%;
   transform: translate(-50%, -50%);
-  font-size: 2.4rem; z-index: 5; line-height: 1;
+  z-index: 6; line-height: 1;
   transition: opacity .28s, transform .28s;
-  /* subtle pulse to invite click */
-  animation: sealPulse 2.2s ease-in-out infinite;
 }
 .env-seal.hide {
   opacity: 0;
   transform: translate(-50%, -50%) scale(.3);
-  animation: none;
 }
+.env-seal-inner {
+  display: block; font-size: 2.4rem;
+  animation: sealPulse 2.2s ease-in-out infinite;
+}
+.env-seal.hide .env-seal-inner { animation: none; }
 
 @keyframes sealPulse {
-  0%, 100% { transform: translate(-50%, -50%) scale(1); }
-  50%       { transform: translate(-50%, -50%) scale(1.1); }
+  0%, 100% { transform: scale(1); }
+  50%      { transform: scale(1.1); }
 }
 
 @media (max-width: 340px) {
-  /* top = 138 + 46 = 184px */
-  .env-seal { top: 184px; }
+  .env-seal { top: 183px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .envelope-hint, .env-seal-inner { animation: none; }
+  .env-flap, .env-letter, .env-seal { transition-duration: .01s; }
 }

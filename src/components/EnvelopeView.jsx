@@ -11,13 +11,16 @@ export default function EnvelopeView({ onOpen }) {
     if (opened) return
     setOpened(true)
     setSealHidden(true)
-    setTimeout(() => setFlapOpen(true), 150)   // flap opens: 0.65s → done at ~800ms
-    setTimeout(() => setLetterOpen(true), 950) // letter rises after flap fully open
-    setTimeout(() => onOpen(), 1750)           // transition done
+    setTimeout(() => setFlapOpen(true), 150)    // klopa: 0.65 s → hotovo ~800 ms
+    setTimeout(() => setLetterOpen(true), 900)  // dopis vyjíždí po otevření klopy
+    setTimeout(() => onOpen(), 1850)            // konec přechodu
   }
 
   function handleKeyDown(e) {
-    if (e.key === 'Enter' || e.key === ' ') handleOpen()
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault()
+      handleOpen()
+    }
   }
 
   return (
@@ -33,30 +36,57 @@ export default function EnvelopeView({ onOpen }) {
         onClick={handleOpen}
         onKeyDown={handleKeyDown}
       >
-        {/* SVG envelope body + folds — drop-shadow only on this element */}
-        <div className="env-shell">
-          <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        {/* 1) Zadní stěna + vnitřek obálky (za dopisem) */}
+        <div className="env-back" aria-hidden="true">
+          <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="envInside" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stopColor="#e9b3c8" />
+                <stop offset="100%" stopColor="#f6cfde" />
+              </linearGradient>
+            </defs>
+            {/* papír obálky */}
             <rect x="1" y="1" width="298" height="198" rx="6"
-              fill="#fff7fa" stroke="#ffc3d8" strokeWidth="2"/>
-            <polygon points="0,200 150,115 300,200" fill="#ffe1ec"/>
-            <polygon points="0,55 0,200 150,115" fill="#ffd3e3" opacity=".85"/>
-            <polygon points="300,55 300,200 150,115" fill="#ffd3e3" opacity=".85"/>
+              fill="#fff7fa" stroke="#f3b9cd" strokeWidth="2" />
+            {/* tmavší vnitřek – vidět štěrbinou po otevření klopy */}
+            <rect x="4" y="3" width="292" height="95" rx="5" fill="url(#envInside)" />
           </svg>
         </div>
 
-        {/* Letter — starts inside the envelope, rises through the opening */}
+        {/* 2) Dopis – mezi zadní stěnou a přední kapsou,
+               takže opravdu vyjíždí ze štěrbiny obálky */}
         <div className={`env-letter${letterOpen ? ' open' : ''}`}>
           <span className="env-letter-icon">💗</span>
           <div className="env-letter-lines" aria-hidden="true">
-            <div/><div/><div/>
+            <div /><div /><div />
           </div>
         </div>
 
-        {/* Flap — triangular, 3D-folds backward when opened */}
-        <div className={`env-flap${flapOpen ? ' open' : ''}`}/>
+        {/* 3) Přední kapsa – boční a spodní sklady (před dopisem) */}
+        <div className="env-front" aria-hidden="true">
+          <svg viewBox="0 0 300 200" xmlns="http://www.w3.org/2000/svg">
+            {/* boční sklady */}
+            <polygon points="1,55 1,199 150,115" fill="#ffd9e6" />
+            <polygon points="299,55 299,199 150,115" fill="#ffd9e6" />
+            {/* spodní sklad */}
+            <polygon points="1,199 150,113 299,199" fill="#ffe4ee" />
+            {/* linky skladů pro plastičnost */}
+            <path d="M1,199 L150,113 L299,199" fill="none"
+              stroke="#f3b9cd" strokeWidth="1.5" strokeLinejoin="round" />
+            {/* obrys, ať kapsa lícuje s tělem */}
+            <rect x="1" y="1" width="298" height="198" rx="6"
+              fill="none" stroke="#f3b9cd" strokeWidth="2" />
+          </svg>
+        </div>
 
-        {/* Wax seal */}
-        <div className={`env-seal${sealHidden ? ' hide' : ''}`}>💌</div>
+        {/* 4) Klopa – pant přesně na horní hraně obálky,
+               líc + rub řeší ::before/::after v CSS */}
+        <div className={`env-flap${flapOpen ? ' open' : ''}`} aria-hidden="true" />
+
+        {/* 5) Pečeť – pulz na vnitřním prvku, mizení na vnějším */}
+        <div className={`env-seal${sealHidden ? ' hide' : ''}`} aria-hidden="true">
+          <span className="env-seal-inner">💌</span>
+        </div>
       </div>
 
       <p className={`envelope-hint${opened ? ' faded' : ''}`}>Klikni pro otevření</p>
