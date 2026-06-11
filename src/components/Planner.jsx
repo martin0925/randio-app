@@ -4,7 +4,6 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { db, auth } from '../firebase'
 import { ACTIVITIES, TIMES, DAYS, MONTHS_GEN, MONTHS } from '../constants'
 import { pad, fmtD, parseDate, findAct, baseUrl } from '../utils'
-import ShareButtons from './ShareButtons'
 
 export default function Planner({ editDoc = null, prefill = null, onEditDone = null }) {
   const today = new Date()
@@ -87,6 +86,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   const [shareText, setShareText] = useState('')
   const [error, setError] = useState(null)
   const [submitting, setSubmitting] = useState(false)
+  const [copied, setCopied] = useState(false)
 
   const { dates, time, customTime, act, customAct, calView, od, komu, osloveni_komu, misto, zprava } = state
 
@@ -106,6 +106,24 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         ? `Vytvořit návrh s ${dates.length} termíny 💌`
         : 'Vytvořit a poslat návrh 💌'
     }
+  }
+
+  function handleCopy() {
+    if (!shareUrl) return
+    navigator.clipboard?.writeText(shareUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2400)
+    })
+  }
+
+  function handleReset() {
+    setState(initState())
+    setSuccess(false)
+    setSuccessMsg('')
+    setShareUrl(null)
+    setShareText('')
+    setError(null)
+    setCopied(false)
   }
 
   function toggleDate(date) {
@@ -326,52 +344,44 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         />
       </section>
 
-      {/* Sender name */}
+      {/* Who */}
       <section className="section">
-        <h2 className="label">
-          ✍️ Tvoje jméno <span className="optional">(nepovinné)</span>
-        </h2>
-        <input
-          className="input"
-          style={{ marginTop: 0 }}
-          type="text"
-          placeholder="Ať druhá strana ví, od koho návrh je"
-          value={od}
-          onChange={(e) => setState((s) => ({ ...s, od: e.target.value }))}
-        />
-      </section>
-
-      {/* Recipient name */}
-      <section className="section">
-        <h2 className="label">
-          💌 Komu píšeš? <span className="optional">(nepovinné)</span>
-        </h2>
-        <input
-          className="input"
-          style={{ marginTop: 0 }}
-          type="text"
-          placeholder="Jméno příjemce — objeví se v dopise"
-          value={komu}
-          onChange={(e) => setState((s) => ({ ...s, komu: e.target.value }))}
-        />
-      </section>
-
-      {/* Salutation */}
-      <section className="section">
-        <h2 className="label">
-          🗣️ Oslovení v dopise <span className="optional">(nepovinné)</span>
-        </h2>
-        <p className="cal-hint" style={{ margin: '0 0 8px', textAlign: 'left' }}>
-          Přesné oslovení v 5. pádu — použije se místo „Milá/ý jméno"
-        </p>
-        <input
-          className="input"
-          style={{ marginTop: 0 }}
-          type="text"
-          placeholder="Milá Terezko, Milý Karle, lásko…"
-          value={osloveni_komu}
-          onChange={(e) => setState((s) => ({ ...s, osloveni_komu: e.target.value }))}
-        />
+        <h2 className="label">💌 Od koho / Komu? <span className="optional">(nepovinné)</span></h2>
+        <div className="who-grid">
+          <div className="who-field">
+            <span className="who-label">Tvoje jméno</span>
+            <input
+              className="input"
+              style={{ marginTop: 4 }}
+              type="text"
+              placeholder="Tvoje jméno"
+              value={od}
+              onChange={(e) => setState((s) => ({ ...s, od: e.target.value }))}
+            />
+          </div>
+          <div className="who-field">
+            <span className="who-label">Komu píšeš?</span>
+            <input
+              className="input"
+              style={{ marginTop: 4 }}
+              type="text"
+              placeholder="Jméno příjemce"
+              value={komu}
+              onChange={(e) => setState((s) => ({ ...s, komu: e.target.value }))}
+            />
+          </div>
+        </div>
+        <div className="who-field" style={{ marginTop: 10 }}>
+          <span className="who-label">Oslovení v dopise <span className="optional">(5. pád — místo „Milá/ý jméno")</span></span>
+          <input
+            className="input"
+            style={{ marginTop: 4 }}
+            type="text"
+            placeholder="Milá Terezko, Milý Karle, lásko…"
+            value={osloveni_komu}
+            onChange={(e) => setState((s) => ({ ...s, osloveni_komu: e.target.value }))}
+          />
+        </div>
       </section>
 
       {/* Message */}
@@ -396,15 +406,31 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         {success ? (editDoc ? 'Protinávrh odeslán ✓' : 'Návrh vytvořen ✓') : sendLabel}
       </button>
 
-      {success && (
-        <div style={{ marginTop: '14px' }}>
-          <p className="note">{successMsg}</p>
-          {!editDoc && shareUrl && (
-            <>
-              <p className="share-label">Sdílet pozvánku</p>
-              <ShareButtons url={shareUrl} text={shareText} />
-            </>
-          )}
+      {success && !editDoc && shareUrl && (
+        <div className="success-card">
+          <span className="success-icon">💌</span>
+          <p className="success-title">Pozvánka je připravena!</p>
+          <p className="success-hint">
+            {komu.trim() ? `Zkopíruj odkaz a pošli ho ${komu.trim()}` : 'Zkopíruj odkaz a pošli ho své lásce'}
+          </p>
+          <div className="success-url-row">
+            <input
+              className="success-url-input"
+              readOnly
+              value={shareUrl}
+              onFocus={(e) => e.target.select()}
+              onClick={(e) => e.target.select()}
+            />
+            <button
+              className={`success-copy-btn${copied ? ' copied' : ''}`}
+              onClick={handleCopy}
+            >
+              {copied ? '✓ Zkopírováno' : '📋 Kopírovat'}
+            </button>
+          </div>
+          <button className="success-new-btn" onClick={handleReset}>
+            ✨ Naplánovat nové rande
+          </button>
         </div>
       )}
 
