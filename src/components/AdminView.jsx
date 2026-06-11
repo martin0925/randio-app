@@ -130,13 +130,16 @@ function PrefsPanel({ uid }) {
   function addVlastni() {
     const label = newLabel.trim()
     if (!label) return
-    setVlastniAktivity((prev) => [...prev, { emoji: newEmoji.trim(), label }])
+    setVlastniAktivity((prev) => [...prev, { id: `ca_${Date.now()}`, emoji: newEmoji.trim(), label }])
     setNewEmoji('')
     setNewLabel('')
   }
 
   function removeVlastni(idx) {
+    const removed = vlastniAktivity[idx]
+    const aid = removed.id || removed.label
     setVlastniAktivity((prev) => prev.filter((_, i) => i !== idx))
+    setOblibene((prev) => prev.filter((id) => id !== aid))
   }
 
   if (!loaded) return <p className="sub" style={{ padding: '24px 0' }}>Načítám…</p>
@@ -187,8 +190,11 @@ function PrefsPanel({ uid }) {
       </div>
 
       <div className="pref-section">
-        <label className="pref-label">❤️ Oblíbené aktivity</label>
-        <p className="pref-hint">Zobrazí se jako výchozí výběr v planneru</p>
+        <label className="pref-label">💞 Aktivity v planneru</label>
+        <p className="pref-hint">
+          Zaškrtni, co se má zobrazovat. Vlastní přidáš níže, smažeš křížkem.
+          {oblibene.length === 0 && ' (žádný výběr = zobrazí se vše)'}
+        </p>
         <div className="pref-acts">
           {ACTIVITIES.map((a) => (
             <button key={a.id} className={`pref-act${oblibene.includes(a.id) ? ' sel' : ''}`}
@@ -196,21 +202,21 @@ function PrefsPanel({ uid }) {
               <span>{a.emoji}</span>{a.label}
             </button>
           ))}
+          {vlastniAktivity.map((a, i) => {
+            const aid = a.id || a.label
+            return (
+              <div key={aid} className="pref-act-wrap">
+                <button className={`pref-act${oblibene.includes(aid) ? ' sel' : ''}`}
+                  onClick={() => toggleOblibena(aid)}>
+                  <span>{a.emoji || '✨'}</span>{a.label}
+                </button>
+                <button className="pref-act-del" aria-label="Odebrat"
+                  onClick={(e) => { e.stopPropagation(); removeVlastni(i) }}>×</button>
+              </div>
+            )
+          })}
         </div>
-      </div>
-
-      <div className="pref-section">
-        <label className="pref-label">✨ Vlastní aktivity</label>
-        <p className="pref-hint">Zobrazí se jako chips v "Co podnikneme?" při tvorbě pozvánky</p>
-        <div className="custom-acts-list">
-          {vlastniAktivity.map((a, i) => (
-            <div key={i} className="custom-act-item">
-              <span className="custom-act-text">{a.emoji ? `${a.emoji} ` : ''}{a.label}</span>
-              <button className="custom-act-remove" onClick={() => removeVlastni(i)} aria-label="Odebrat">×</button>
-            </div>
-          ))}
-        </div>
-        <div className="custom-act-form">
+        <div className="custom-act-form" style={{ marginTop: 14 }}>
           <input
             className="input custom-act-emoji-input"
             type="text"

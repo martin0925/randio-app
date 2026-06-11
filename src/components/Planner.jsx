@@ -67,10 +67,12 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
       }))
       setCustomActivities(prefs.vlastni_aktivity || [])
+      setOblibene(prefs.oblibene_aktivity || [])
     })
   }, [editDoc])
 
   const [customActivities, setCustomActivities] = useState([])
+  const [oblibene, setOblibene] = useState([])
   const [success, setSuccess] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [shareUrl, setShareUrl] = useState(null)
@@ -272,27 +274,33 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       <section className="section">
         <h2 className="label">💞 Co podnikneme?</h2>
         <div className="acts">
-          {ACTIVITIES.map((a) => (
-            <button
-              key={a.id}
-              className={`act${!customAct.trim() && act === a.id ? ' sel' : ''}`}
-              onClick={() => setState((s) => ({ ...s, act: a.id, customAct: '' }))}
-            >
-              <span className="em">{a.emoji}</span>{a.label}
-            </button>
-          ))}
-          {customActivities.map((a, i) => {
-            const fullText = [a.emoji, a.label].filter(Boolean).join(' ')
-            return (
-              <button
-                key={`ca_${i}`}
-                className={`act${!act && customAct === fullText ? ' sel' : ''}`}
-                onClick={() => setState((s) => ({ ...s, act: null, customAct: fullText }))}
-              >
-                {a.emoji && <span className="em">{a.emoji}</span>}{a.label}
-              </button>
-            )
-          })}
+          {(() => {
+            const allActs = [
+              ...ACTIVITIES,
+              ...customActivities.map((a) => ({ ...a, id: a.id || a.label, custom: true })),
+            ]
+            const plannerActs = oblibene.length > 0
+              ? allActs.filter((a) => oblibene.includes(a.id))
+              : allActs
+            return plannerActs.map((a) => {
+              const fullText = a.custom ? [a.emoji, a.label].filter(Boolean).join(' ') : null
+              const isSelected = a.custom
+                ? (!act && customAct === fullText)
+                : (!customAct.trim() && act === a.id)
+              return (
+                <button
+                  key={a.id}
+                  className={`act${isSelected ? ' sel' : ''}`}
+                  onClick={() => a.custom
+                    ? setState((s) => ({ ...s, act: null, customAct: fullText }))
+                    : setState((s) => ({ ...s, act: a.id, customAct: '' }))
+                  }
+                >
+                  {a.emoji && <span className="em">{a.emoji}</span>}{a.label}
+                </button>
+              )
+            })
+          })()}
         </div>
         <input
           className="input"
