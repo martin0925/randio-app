@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth'
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, addDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useAuth } from '../hooks/useAuth'
 import { ACTIVITIES } from '../constants'
@@ -13,6 +13,14 @@ export default function AdminView() {
   const { user, loading } = useAuth()
   const [tab, setTab] = useState('prefs')
 
+  useEffect(() => {
+    if (!user) return
+    setDoc(doc(db, 'users', user.uid), {
+      email: user.email,
+      photoURL: user.photoURL,
+    }, { merge: true }).catch(() => {})
+  }, [user?.uid])
+
   if (loading) return <p className="sub" style={{ marginTop: '40vh' }}>Načítám… 💗</p>
 
   if (!user) return <LoginScreen />
@@ -22,7 +30,10 @@ export default function AdminView() {
       <AdminHeader user={user} />
       <div className="admin-tabs">
         <button className={`admin-tab${tab === 'prefs' ? ' active' : ''}`} onClick={() => setTab('prefs')}>
-          ⚙️ Preference
+          ⚙️ Nastavení
+        </button>
+        <button className={`admin-tab${tab === 'friends' ? ' active' : ''}`} onClick={() => setTab('friends')}>
+          👥 Přátelé
         </button>
         <button className={`admin-tab${tab === 'active' ? ' active' : ''}`} onClick={() => setTab('active')}>
           💌 Aktivní
@@ -32,6 +43,7 @@ export default function AdminView() {
         </button>
       </div>
       {tab === 'prefs'   && <PrefsPanel uid={user.uid} />}
+      {tab === 'friends' && <FriendsPanel user={user} />}
       {tab === 'active'  && <InviteList uid={user.uid} filter="active" />}
       {tab === 'history' && <InviteList uid={user.uid} filter="history" />}
     </div>
@@ -280,6 +292,193 @@ function PrefsPanel({ uid }) {
       <button className="cta" onClick={handleSave} disabled={saving}>
         {saved ? 'Uloženo ✓' : saving ? 'Ukládám…' : 'Uložit preference'}
       </button>
+    </div>
+  )
+}
+
+function FriendsPanel({ user }) {
+  const [refreshKey, setRefreshKey] = useState(0)
+  const refresh = () => setRefreshKey((k) => k + 1)
+
+  const [contacts, setContacts] = useState([])
+  const [pending, setPending] = useState([])
+  const [panelLoading, setPanelLoading] = useState(true)
+
+  const [searchEmail, setSearchEmail] = useState('')
+  const [searching, setSearching] = useState(false)
+  const [searchResult, setSearchResult] = useState(null)
+
+  useEffect(() => {
+    setPanelLoading(true)
+    Promise.all([
+      getDoc(doc(db, 'users', user.uid)),
+      getDocs(query(collection(db, 'friend_requests'), where('to_uid', '==', user.uid), where('status', '==', 'pending'))),
+    ]).then(([userSnap, reqSnap]) => {
+      setContacts(userSnap.data()?.contacts || [])
+      setPending(reqSnap.docs.map((d) => ({ id: d.id, ...d.data() })))
+      setPanelLoading(false)
+    })
+  }, [user.uid, refreshKey])
+
+  async function handleSearch() {
+    const email = searchEmail.trim().toLowerCase()
+    if (!email) return
+    setSearching(true)
+    setSearchResult(null)
+
+    if (email === user.email?.toLowerCase()) { setSearchResult({ type: 'self' }); setSearching(false); return }
+    if (contacts.some((c) => c.email?.toLowerCase() === email)) { setSearchResult({ type: 'already_friend' }); setSearching(false); return }
+
+    const snap = await getDocs(query(collection(db, 'users'), where('email', '==', email)))
+    if (snap.empty) {
+      setSearchResult({ type: 'not_found' })
+    } else {
+      const found = { uid: snap.docs[0].id, ...snap.docs[0].data() }
+      const existingReq = await getDocs(query(
+        collection(db, 'friend_requests'),
+        where('from_uid', '==', user.uid),
+        where('to_uid', '==', found.uid),
+        where('status', '==', 'pending')
+      ))
+      setSearchResult(existingReq.empty ? { type: 'found', user: found } : { type: 'already_sent' })
+    }
+    setSearching(false)
+  }
+
+  async function sendRequest() {
+    if (searchResult?.type !== 'found') return
+    const toUser = searchResult.user
+    const mySnap = await getDoc(doc(db, 'users', user.uid))
+    const myJmeno = mySnap.data()?.jmeno || user.displayName || ''
+
+    await addDoc(collection(db, 'friend_requests'), {
+      from_uid: user.uid,
+      from_name: myJmeno,
+      from_email: user.email || '',
+      from_photo: user.photoURL || '',
+      to_uid: toUser.uid,
+      status: 'pending',
+      created: serverTimestamp(),
+    })
+    setSearchResult({ type: 'sent' })
+  }
+
+  async function acceptRequest(req) {
+    const [mySnap, theirSnap] = await Promise.all([
+      getDoc(doc(db, 'users', user.uid)),
+      getDoc(doc(db, 'users', req.from_uid)),
+    ])
+    const myContacts = mySnap.data()?.contacts || []
+    const theirContacts = theirSnap.data()?.contacts || []
+    const myJmeno = mySnap.data()?.jmeno || user.displayName || ''
+
+    const newContact = { uid: req.from_uid, jmeno: req.from_name, email: req.from_email, photoURL: req.from_photo }
+    const meAsContact = { uid: user.uid, jmeno: myJmeno, email: user.email || '', photoURL: user.photoURL || '' }
+
+    const updates = [updateDoc(doc(db, 'friend_requests', req.id), { status: 'accepted' })]
+    if (!myContacts.some((c) => c.uid === req.from_uid))
+      updates.push(updateDoc(doc(db, 'users', user.uid), { contacts: [...myContacts, newContact] }))
+    if (!theirContacts.some((c) => c.uid === user.uid))
+      updates.push(updateDoc(doc(db, 'users', req.from_uid), { contacts: [...theirContacts, meAsContact] }))
+    await Promise.all(updates)
+    refresh()
+  }
+
+  async function declineRequest(req) {
+    await deleteDoc(doc(db, 'friend_requests', req.id))
+    refresh()
+  }
+
+  async function removeContact(contact) {
+    const mySnap = await getDoc(doc(db, 'users', user.uid))
+    const updated = (mySnap.data()?.contacts || []).filter((c) => c.uid !== contact.uid)
+    await updateDoc(doc(db, 'users', user.uid), { contacts: updated })
+    refresh()
+  }
+
+  if (panelLoading) return <p className="sub" style={{ padding: '24px 0' }}>Načítám…</p>
+
+  return (
+    <div className="friends-panel">
+      {pending.length > 0 && (
+        <div className="pref-section">
+          <label className="pref-label">📬 Žádosti o spojení</label>
+          <div className="friends-list">
+            {pending.map((req) => (
+              <div key={req.id} className="friend-item">
+                {req.from_photo
+                  ? <img src={req.from_photo} className="friend-avatar" alt="" referrerPolicy="no-referrer" />
+                  : <span className="friend-avatar-ph">👤</span>}
+                <div className="friend-info">
+                  <span className="friend-name">{req.from_name || req.from_email}</span>
+                  <span className="friend-email">{req.from_email}</span>
+                </div>
+                <div className="friend-req-btns">
+                  <button className="friend-accept-btn" onClick={() => acceptRequest(req)}>✓ Přijmout</button>
+                  <button className="friend-decline-btn" onClick={() => declineRequest(req)}>× Odmítnout</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="pref-section">
+        <label className="pref-label">🔍 Najít přítele / partnera</label>
+        <p className="pref-hint">Zadej emailovou adresu Google účtu</p>
+        <div className="friends-search-row">
+          <input
+            className="input" style={{ margin: 0, flex: 1 }}
+            type="email" placeholder="email@gmail.com"
+            value={searchEmail}
+            onChange={(e) => { setSearchEmail(e.target.value); setSearchResult(null) }}
+            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
+          />
+          <button className="friends-search-btn" onClick={handleSearch} disabled={!searchEmail.trim() || searching}>
+            {searching ? '…' : 'Hledat'}
+          </button>
+        </div>
+        {searchResult?.type === 'not_found'     && <p className="friends-msg">Uživatel nenalezen — partner se musí nejdřív přihlásit do Randio.</p>}
+        {searchResult?.type === 'self'          && <p className="friends-msg">To jsi ty 😄</p>}
+        {searchResult?.type === 'already_friend'&& <p className="friends-msg">Tento uživatel je už v tvém seznamu.</p>}
+        {searchResult?.type === 'already_sent'  && <p className="friends-msg">Žádost čeká na přijetí 🕐</p>}
+        {searchResult?.type === 'sent'          && <p className="friends-msg ok">Žádost odeslána ✓</p>}
+        {searchResult?.type === 'found' && (
+          <div className="friend-found-card">
+            {searchResult.user.photoURL
+              ? <img src={searchResult.user.photoURL} className="friend-avatar" alt="" referrerPolicy="no-referrer" />
+              : <span className="friend-avatar-ph">👤</span>}
+            <div className="friend-info">
+              <span className="friend-name">{searchResult.user.jmeno || searchResult.user.email}</span>
+              <span className="friend-email">{searchResult.user.email}</span>
+            </div>
+            <button className="friend-add-btn" onClick={sendRequest}>+ Přidat</button>
+          </div>
+        )}
+      </div>
+
+      <div className="pref-section">
+        <label className="pref-label">💑 Moji přátelé</label>
+        {contacts.length === 0
+          ? <p className="pref-hint">Zatím žádní přátelé. Přidej je pomocí emailu výše.</p>
+          : (
+            <div className="friends-list">
+              {contacts.map((c) => (
+                <div key={c.uid} className="friend-item">
+                  {c.photoURL
+                    ? <img src={c.photoURL} className="friend-avatar" alt="" referrerPolicy="no-referrer" />
+                    : <span className="friend-avatar-ph">👤</span>}
+                  <div className="friend-info">
+                    <span className="friend-name">{c.jmeno || c.email}</span>
+                    <span className="friend-email">{c.email}</span>
+                  </div>
+                  <button className="friend-remove-btn" onClick={() => removeContact(c)} aria-label="Odebrat">×</button>
+                </div>
+              ))}
+            </div>
+          )
+        }
+      </div>
     </div>
   )
 }

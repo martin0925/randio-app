@@ -62,6 +62,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       const snap = await getDoc(doc(db, 'users', user.uid))
       if (!snap.exists()) return
       const prefs = snap.data()
+      setContacts(prefs.contacts || [])
       setState((s) => ({
         ...s,
         od:            s.od            || prefs.jmeno              || '',
@@ -82,6 +83,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
     })
   }, [editDoc])
 
+  const [contacts, setContacts] = useState([])
   const [plannerActs, setPlannerActs] = useState(null)
   const [success, setSuccess] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
@@ -359,6 +361,25 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       {/* Who */}
       <section className="section">
         <h2 className="label">💌 Od koho / Komu? <span className="optional">(nepovinné)</span></h2>
+        {!editDoc && contacts.length > 0 && (
+          <div className="contact-quick-pick">
+            <span className="who-label">Rychlý výběr</span>
+            <div className="contact-chips">
+              {contacts.map((c) => (
+                <button
+                  key={c.uid}
+                  className={`contact-chip${komu === (c.jmeno || '') && c.jmeno ? ' sel' : ''}`}
+                  onClick={() => setState((s) => ({ ...s, komu: c.jmeno || '' }))}
+                >
+                  {c.photoURL
+                    ? <img src={c.photoURL} className="contact-chip-avatar" alt="" referrerPolicy="no-referrer" />
+                    : <span className="contact-chip-ph">👤</span>}
+                  {c.jmeno || c.email}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
         <div className="who-grid">
           <div className="who-field">
             <span className="who-label">Tvoje jméno</span>
