@@ -54,14 +54,21 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   const [currentUser, setCurrentUser] = useState(auth.currentUser)
   const currentUserRef = useRef(auth.currentUser)
 
+  // Track auth state — runs once on mount
   useEffect(() => {
-    return onAuthStateChanged(auth, async (user) => {
+    return onAuthStateChanged(auth, (user) => {
       currentUserRef.current = user
       setCurrentUser(user)
-      if (editDoc || !user) return
-      try {
-        const snap = await getDoc(doc(db, 'users', user.uid))
-        if (!snap.exists()) return
+    })
+  }, [])
+
+  // Load prefs — re-runs whenever the signed-in uid changes
+  useEffect(() => {
+    if (editDoc || !currentUser) return
+    let live = true
+    getDoc(doc(db, 'users', currentUser.uid))
+      .then((snap) => {
+        if (!live || !snap.exists()) return
         const prefs = snap.data()
         setContacts(prefs.contacts || [])
         setState((s) => ({
@@ -81,11 +88,10 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           ]
           setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
         }
-      } catch (e) {
-        console.error('Prefs load failed:', e.code || e.message)
-      }
-    })
-  }, [editDoc])
+      })
+      .catch((e) => console.error('Prefs load failed:', e.code || e.message))
+    return () => { live = false }
+  }, [currentUser?.uid, editDoc])
 
   const [contacts, setContacts] = useState([])
   const [plannerActs, setPlannerActs] = useState(null)
