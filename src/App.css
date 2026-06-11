@@ -400,6 +400,35 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
 
 .cal-hint { font-size: .73rem; color: #b06a85; margin-top: 8px; text-align: center; }
 
+/* ── BACK BUTTON ────────────────────────────────────────── */
+.back-btn {
+  display: inline-flex; align-items: center; gap: 4px;
+  background: none; border: 1.5px solid rgba(255,193,214,.7);
+  color: #b06a85; border-radius: 999px; padding: 7px 16px;
+  font-family: inherit; font-size: .84rem; font-weight: 600; cursor: pointer;
+  margin-bottom: 14px; transition: background .15s, transform .12s;
+}
+.back-btn:hover { background: rgba(255,230,239,.8); transform: translateX(-2px); }
+
+/* ── CTA CHECKLIST ──────────────────────────────────────── */
+.cta-checklist {
+  display: flex; justify-content: center; gap: 8px;
+  margin-bottom: 10px;
+}
+.cta-check {
+  font-size: .78rem; font-weight: 700;
+  padding: 5px 13px; border-radius: 999px;
+  border: 1.5px solid rgba(255,193,214,.55);
+  background: rgba(255,247,250,.8);
+  color: #c9a0b4;
+  transition: color .25s, background .25s, border-color .25s;
+}
+.cta-check.ok {
+  color: #2e7d32;
+  background: rgba(200,240,210,.85);
+  border-color: rgba(100,200,130,.45);
+}
+
 /* ── PLANNER TOPBAR ─────────────────────────────────────── */
 .planner-topbar { display: flex; justify-content: flex-end; margin-bottom: 6px; }
 

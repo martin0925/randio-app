@@ -80,11 +80,16 @@ export default function InviteView({ randeId }) {
 
   if (editing) {
     return (
-      <Planner
-        editDoc={doc(db, 'rande', randeId)}
-        prefill={plan}
-        onEditDone={() => setEditing(false)}
-      />
+      <>
+        <button className="back-btn" onClick={() => setEditing(false)}>
+          ‹ Zpět na pozvánku
+        </button>
+        <Planner
+          editDoc={doc(db, 'rande', randeId)}
+          prefill={plan}
+          onEditDone={() => setEditing(false)}
+        />
+      </>
     )
   }
 

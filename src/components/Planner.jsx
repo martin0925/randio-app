@@ -410,6 +410,14 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         />
       </section>
 
+      {!success && (
+        <div className="cta-checklist">
+          <span className={`cta-check${hasDates ? ' ok' : ''}`}>📅 {hasDates ? '✓' : '✗'}</span>
+          <span className={`cta-check${chosenTime() ? ' ok' : ''}`}>🕐 {chosenTime() ? '✓' : '✗'}</span>
+          <span className={`cta-check${chosenAct() ? ' ok' : ''}`}>💞 {chosenAct() ? '✓' : '✗'}</span>
+        </div>
+      )}
+
       <button
         className="cta"
         disabled={!ready || submitting || success}
