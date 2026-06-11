@@ -1,11 +1,24 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
+import confetti from 'canvas-confetti'
 import { db } from '../firebase'
 import { baseUrl, openInCalendar } from '../utils'
 import EnvelopeView from './EnvelopeView'
 import LetterCard from './LetterCard'
 import ShareButtons from './ShareButtons'
 import Planner from './Planner'
+
+const CONFETTI_COLORS = ['#e2477d', '#c2185b', '#ff8fb1', '#fff', '#ffc0cb', '#ff4d94']
+
+function fireConfetti() {
+  const burst = (x, delay = 0) => setTimeout(() =>
+    confetti({ particleCount: 70, spread: 75, origin: { x, y: 0.55 }, colors: CONFETTI_COLORS, scalar: 1.1 }),
+    delay
+  )
+  burst(0.5)
+  burst(0.3, 220)
+  burst(0.7, 380)
+}
 
 export default function InviteView({ randeId }) {
   const [plan, setPlan] = useState(null)
@@ -15,8 +28,16 @@ export default function InviteView({ randeId }) {
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const prevStav = useRef(null)
 
   const isCreator = localStorage.getItem(`creator_${randeId}`) === '1'
+
+  useEffect(() => {
+    if (plan?.stav === 'potvrzeno' && prevStav.current && prevStav.current !== 'potvrzeno') {
+      fireConfetti()
+    }
+    if (plan?.stav) prevStav.current = plan.stav
+  }, [plan?.stav])
 
   useEffect(() => {
     const ref = doc(db, 'rande', randeId)
