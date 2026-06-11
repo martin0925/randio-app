@@ -13,7 +13,7 @@ body {
     linear-gradient(165deg, #fff8fa 0%, #ffe6ef 52%, #ffd5e6 100%);
 }
 
-.card { width: 100%; max-width: 480px; position: relative; z-index: 1; }
+.card { width: 100%; max-width: 480px; position: relative; z-index: 1; isolation: isolate; }
 
 h1.title {
   font-family: 'Cormorant Garamond', serif;
@@ -99,7 +99,6 @@ h1.title {
   color: #4a1e30; border-radius: 999px; padding: 8px 16px;
   font-family: inherit; font-size: .86rem; font-weight: 500; cursor: pointer;
   transition: background .15s, border-color .15s, transform .12s;
-  backdrop-filter: blur(4px);
 }
 .chip:hover { background: rgba(255,230,239,.9); transform: translateY(-1px); }
 .chip.sel {
@@ -131,7 +130,6 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
   border-radius: 16px; padding: 14px 10px; font-family: inherit;
   font-size: .8rem; font-weight: 500; color: #4a1e30; cursor: pointer;
   text-align: center; transition: background .15s, transform .18s, box-shadow .18s;
-  backdrop-filter: blur(4px);
 }
 .act:hover { background: rgba(255,230,239,.9); transform: translateY(-2px); box-shadow: 0 4px 14px rgba(194,24,91,.1); }
 .act.sel {
@@ -285,7 +283,7 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
 .badge {
   display: inline-block; padding: 5px 14px;
   border-radius: 999px; font-size: .75rem; font-weight: 600;
-  letter-spacing: .02em; backdrop-filter: blur(6px);
+  letter-spacing: .02em;
 }
 .badge.navrh { background: rgba(255,243,205,.9); color: #7a5c10; border: 1px solid rgba(255,220,100,.3); }
 .badge.protinavrh { background: rgba(255,224,178,.9); color: #8c4a00; border: 1px solid rgba(255,180,80,.3); }
@@ -299,7 +297,6 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
   color: #a8244e; border-radius: 999px; padding: 12px;
   font-family: inherit; font-weight: 600; font-size: .88rem; cursor: pointer;
   transition: background .15s, transform .12s, box-shadow .15s;
-  backdrop-filter: blur(4px);
 }
 .secondary:hover { background: rgba(255,230,239,.9); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(194,24,91,.1); }
 
@@ -323,7 +320,6 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
   font-size: .84rem; font-weight: 600; cursor: pointer;
   display: flex; align-items: center; gap: 6px; text-decoration: none;
   transition: background .15s, transform .15s, box-shadow .15s;
-  backdrop-filter: blur(4px);
 }
 .share-btn:hover { background: rgba(255,230,239,.95); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(194,24,91,.12); }
 .share-btn.copied { background: rgba(215,245,221,.9); border-color: rgba(100,200,120,.4); color: #1a6b30; }
@@ -342,7 +338,6 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
   font-size: .84rem; color: #b3261e;
   background: rgba(253,232,230,.9); border: 1px solid rgba(245,198,192,.7);
   border-radius: 14px; padding: 10px 16px; margin-top: 12px; text-align: center;
-  backdrop-filter: blur(6px);
 }
 
 .live-dot {
@@ -374,7 +369,6 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
   color: #4a1e30; border-radius: 14px; padding: 10px 14px; font-family: inherit;
   font-size: .84rem; font-weight: 500; cursor: pointer;
   transition: background .15s, transform .14s, box-shadow .14s;
-  backdrop-filter: blur(4px);
 }
 .date-opt:hover { background: rgba(255,230,239,.95); transform: translateY(-1px); }
 .date-opt.sel {
