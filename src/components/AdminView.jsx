@@ -13,7 +13,12 @@ export default function AdminView() {
   const { user, loading } = useAuth()
   const [tab, setTab] = useState('prefs')
 
-  if (loading) return <p className="sub" style={{ marginTop: '40vh' }}>Načítám… 💗</p>
+  if (loading) return (
+    <div className="planner-loader">
+      <div className="loader-heart-wrap"><LoaderHeart /></div>
+      <h1 className="title" style={{ marginTop: 4 }}><span className="title-text">Randio</span></h1>
+    </div>
+  )
 
   if (!user) return <LoginScreen />
 
@@ -186,7 +191,7 @@ function PrefsPanel({ user }) {
     setNewLabel('')
   }
 
-  if (!loaded) return <p className="sub" style={{ padding: '24px 0' }}>Načítám…</p>
+  if (!loaded) return <MiniLoader />
 
   return (
     <div className="admin-prefs">
@@ -419,7 +424,7 @@ function FriendsPanel({ user }) {
     refresh()
   }
 
-  if (panelLoading) return <p className="sub" style={{ padding: '24px 0' }}>Načítám…</p>
+  if (panelLoading) return <MiniLoader />
 
   return (
     <div className="friends-panel">
@@ -527,18 +532,25 @@ function InviteList({ uid, filter }) {
     })
   }, [uid])
 
-  if (loading) return <p className="sub" style={{ padding: '24px 0' }}>Načítám…</p>
+  if (loading) return <MiniLoader />
 
   const filtered = filter === 'active'
     ? invites.filter((i) => i.stav !== 'potvrzeno')
     : invites.filter((i) => i.stav === 'potvrzeno')
 
   if (filtered.length === 0) {
-    return (
+    return filter === 'active' ? (
       <div className="invite-empty">
-        <span>{filter === 'active' ? '🌹' : '📖'}</span>
-        <p>{filter === 'active' ? 'Žádná čekající randíčka' : 'Zatím žádná potvrzená randíčka'}</p>
-        <a href={baseUrl()} className="back-link" style={{ marginTop: 0 }}>Vytvořit pozvánku →</a>
+        <span className="invite-empty-icon">💌</span>
+        <p className="invite-empty-title">Žádná čekající randíčka</p>
+        <p className="invite-empty-sub">Odešli pozvánku a uvidíš ji tady, jakmile ji příjemce otevře.</p>
+        <a href={baseUrl()} className="invite-empty-cta">Vytvořit pozvánku →</a>
+      </div>
+    ) : (
+      <div className="invite-empty">
+        <span className="invite-empty-icon">✨</span>
+        <p className="invite-empty-title">Žádná potvrzená randíčka</p>
+        <p className="invite-empty-sub">Potvrzené rande se přesune sem jako krásná vzpomínka.</p>
       </div>
     )
   }
@@ -616,6 +628,30 @@ function InviteItem({ invite, onDelete }) {
           </button>
         )}
       </div>
+    </div>
+  )
+}
+
+function LoaderHeart() {
+  return (
+    <svg className="loader-heart-svg" viewBox="0 0 32 29.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="ahg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#9e1a45"/>
+          <stop offset="45%" stopColor="#d8366c"/>
+          <stop offset="100%" stopColor="#c2185b"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#ahg)" d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4
+        c0,9.4,9.5,11.9,16,21.2c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+    </svg>
+  )
+}
+
+function MiniLoader() {
+  return (
+    <div className="mini-loader">
+      <div className="loader-heart-wrap loader-heart-wrap--sm"><LoaderHeart /></div>
     </div>
   )
 }
