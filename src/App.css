@@ -506,6 +506,32 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
   text-transform: uppercase; letter-spacing: .06em;
 }
 
+/* ── IN-APP TOAST ────────────────────────────────────────── */
+.in-app-toast {
+  display: flex; align-items: center; gap: 10px;
+  background: rgba(255,255,255,.95);
+  border: 1.5px solid rgba(255,193,214,.7);
+  border-radius: 16px; padding: 12px 14px;
+  margin-bottom: 12px;
+  box-shadow: 0 4px 20px rgba(194,24,91,.13), inset 0 1px 0 rgba(255,255,255,.9);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+  animation: toastIn .28s cubic-bezier(.34,1.56,.64,1);
+}
+.in-app-toast span {
+  flex: 1; font-size: .88rem; font-weight: 600; color: #4a1e30; line-height: 1.4;
+}
+.in-app-toast-close {
+  flex-shrink: 0; background: none; border: none; cursor: pointer;
+  color: #c9a0b4; font-size: 1.1rem; line-height: 1;
+  padding: 2px 4px; border-radius: 6px;
+  transition: color .15s, background .15s;
+}
+.in-app-toast-close:hover { color: #c2185b; background: rgba(255,230,239,.8); }
+@keyframes toastIn {
+  from { opacity: 0; transform: translateY(-8px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 /* ── SUCCESS CARD ───────────────────────────────────────── */
 @keyframes successIn {
   from { opacity: 0; transform: translateY(12px) scale(.97); }

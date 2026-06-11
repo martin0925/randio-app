@@ -2,12 +2,24 @@ import { useState, useEffect, useRef } from 'react'
 import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
 import confetti from 'canvas-confetti'
 import { db, auth } from '../firebase'
-import { requestAndStorePush } from '../usePush'
 import { baseUrl, openInCalendar } from '../utils'
 import EnvelopeView from './EnvelopeView'
 import LetterCard from './LetterCard'
 import ShareButtons from './ShareButtons'
 import Planner from './Planner'
+
+function InAppToast({ msg, onClose }) {
+  useEffect(() => {
+    const t = setTimeout(onClose, 5000)
+    return () => clearTimeout(t)
+  }, [onClose])
+  return (
+    <div className="in-app-toast" role="status">
+      <span>{msg}</span>
+      <button className="in-app-toast-close" onClick={onClose} aria-label="Zavřít">×</button>
+    </div>
+  )
+}
 
 const CONFETTI_COLORS = ['#e2477d', '#c2185b', '#ff8fb1', '#fff', '#ffc0cb', '#ff4d94']
 
@@ -29,7 +41,9 @@ export default function InviteView({ randeId }) {
   const [error, setError] = useState(null)
   const [editing, setEditing] = useState(false)
   const [notFound, setNotFound] = useState(false)
+  const [toast, setToast] = useState(null)
   const prevStav = useRef(null)
+  const prevPlan = useRef(null)
 
   const isCreator = localStorage.getItem(`creator_${randeId}`) === '1'
   const profileLinked = useRef(false)
@@ -50,6 +64,33 @@ export default function InviteView({ randeId }) {
   }, [plan])
 
   useEffect(() => {
+    if (!plan) return
+    const seenKey = `seen_${randeId}`
+    const curr = { stav: plan.stav, odpoved: plan.odpoved || null }
+    const prev = prevPlan.current ?? JSON.parse(localStorage.getItem(seenKey) || 'null')
+
+    if (prev) {
+      let msg = null
+      if (prev.stav !== curr.stav) {
+        if (curr.stav === 'potvrzeno' && isCreator)
+          msg = `🎉 ${plan.komu || 'Příjemce'} přijal/a pozvánku!`
+        else if (curr.stav === 'protinavrh' && isCreator)
+          msg = `💌 ${plan.komu || 'Příjemce'} upravil/a pozvánku`
+        else if (curr.stav === 'protinavrh' && !isCreator)
+          msg = `💌 ${plan.od || 'Tvůj partner'} upravil/a pozvánku`
+      }
+      if (!prev.odpoved && curr.odpoved && isCreator) {
+        const preview = curr.odpoved.length > 50 ? curr.odpoved.slice(0, 50) + '…' : curr.odpoved
+        msg = `💬 ${plan.komu || 'Příjemce'}: „${preview}"`
+      }
+      if (msg) setToast(msg)
+    }
+
+    prevPlan.current = curr
+    localStorage.setItem(seenKey, JSON.stringify(curr))
+  }, [plan])
+
+  useEffect(() => {
     const ref = doc(db, 'rande', randeId)
     const unsub = onSnapshot(
       ref,
@@ -67,10 +108,8 @@ export default function InviteView({ randeId }) {
     const ref = doc(db, 'rande', randeId)
     const upd = { stav: 'potvrzeno', potvrzeno_kdy: serverTimestamp() }
     if (selectedOpt) upd.datum = selectedOpt
-    try {
-      await updateDoc(ref, upd)
-      requestAndStorePush(randeId, 'fcm_prijemce')
-    } catch (err) { setError('Potvrzení se nepodařilo uložit: ' + err.message) }
+    try { await updateDoc(ref, upd) }
+    catch (err) { setError('Potvrzení se nepodařilo uložit: ' + err.message) }
   }
 
   async function handleSendReply(text) {
@@ -113,6 +152,10 @@ export default function InviteView({ randeId }) {
 
   return (
     <>
+      {toast && (
+        <InAppToast msg={toast} onClose={() => setToast(null)} />
+      )}
+
       <p className="sub" style={{ marginBottom: '10px' }}>
         <span className="live-dot"></span>Živé sledování — odpověď uvidíš okamžitě
       </p>

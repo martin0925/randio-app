@@ -1,7 +1,6 @@
 import { initializeApp } from 'firebase/app'
 import { getFirestore } from 'firebase/firestore'
 import { getAuth } from 'firebase/auth'
-import { getMessaging, isSupported } from 'firebase/messaging'
 
 
 const firebaseConfig = {
@@ -16,11 +15,3 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 export const db = getFirestore(app)
 export const auth = getAuth(app)
-
-let _messaging = null
-export async function getMsg() {
-  if (_messaging) return _messaging
-  const ok = await isSupported().catch(() => false)
-  if (ok) _messaging = getMessaging(app)
-  return _messaging
-}
