@@ -13,14 +13,6 @@ export default function AdminView() {
   const { user, loading } = useAuth()
   const [tab, setTab] = useState('prefs')
 
-  useEffect(() => {
-    if (!user) return
-    setDoc(doc(db, 'users', user.uid), {
-      email: user.email,
-      photoURL: user.photoURL,
-    }, { merge: true }).catch(() => {})
-  }, [user?.uid])
-
   if (loading) return <p className="sub" style={{ marginTop: '40vh' }}>Načítám… 💗</p>
 
   if (!user) return <LoginScreen />
