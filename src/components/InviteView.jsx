@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
 import { db } from '../firebase'
-import { baseUrl, downloadIcs, findAct } from '../utils'
+import { baseUrl, openInCalendar } from '../utils'
 import EnvelopeView from './EnvelopeView'
 import LetterCard from './LetterCard'
 import ShareButtons from './ShareButtons'
@@ -24,16 +24,10 @@ export default function InviteView({ randeId }) {
       ref,
       (snap) => {
         setLoading(false)
-        if (!snap.exists()) {
-          setNotFound(true)
-          return
-        }
+        if (!snap.exists()) { setNotFound(true); return }
         setPlan(snap.data())
       },
-      (err) => {
-        setLoading(false)
-        setError('Nepodařilo se načíst rande: ' + err.message)
-      }
+      (err) => { setLoading(false); setError('Nepodařilo se načíst rande: ' + err.message) }
     )
     return unsub
   }, [randeId])
@@ -42,16 +36,16 @@ export default function InviteView({ randeId }) {
     const ref = doc(db, 'rande', randeId)
     const upd = { stav: 'potvrzeno', potvrzeno_kdy: serverTimestamp() }
     if (selectedOpt) upd.datum = selectedOpt
-    try {
-      await updateDoc(ref, upd)
-    } catch (err) {
-      setError('Potvrzení se nepodařilo uložit: ' + err.message)
-    }
+    try { await updateDoc(ref, upd) }
+    catch (err) { setError('Potvrzení se nepodařilo uložit: ' + err.message) }
   }
 
-  if (loading) {
-    return <p className="sub" style={{ marginTop: '40vh' }}>Načítám… 💗</p>
+  async function handleSendReply(text) {
+    try { await updateDoc(doc(db, 'rande', randeId), { odpoved: text }) }
+    catch (err) { setError('Odpověď se nepodařilo uložit: ' + err.message) }
   }
+
+  if (loading) return <p className="sub" style={{ marginTop: '40vh' }}>Načítám… 💗</p>
 
   if (notFound) {
     return (
@@ -78,12 +72,6 @@ export default function InviteView({ randeId }) {
   }
 
   const invUrl = `${baseUrl()}?id=${randeId}`
-  const known = plan ? findAct(plan.aktivita) : null
-  const actLabel = known ? known.label : (plan?.aktivita || '')
-  const shareText = plan?.od
-    ? `${plan.od} tě zve na rande — ${actLabel}`
-    : `Máš pozvánku na rande — ${actLabel}`
-  const shareLabelText = plan?.stav === 'potvrzeno' ? 'Sdílet rande' : 'Sdílet pozvánku'
 
   return (
     <>
@@ -97,10 +85,12 @@ export default function InviteView({ randeId }) {
         onSelectOpt={(opt) => setSelectedOpt(opt)}
         onConfirm={handleConfirm}
         onEdit={() => setEditing(true)}
+        isCreator={isCreator}
+        onSendReply={handleSendReply}
       />
 
       <div className="row" style={{ marginTop: '12px' }}>
-        <button className="secondary" onClick={() => plan && downloadIcs(plan)}>
+        <button className="secondary" onClick={() => plan && openInCalendar(plan)}>
           📅 Uložit do kalendáře
         </button>
         <button className="secondary" onClick={() => { window.location.href = baseUrl() }}>
@@ -108,8 +98,9 @@ export default function InviteView({ randeId }) {
         </button>
       </div>
 
-      <p className="share-label">{shareLabelText}</p>
-      <ShareButtons url={invUrl} text={shareText} />
+      <div style={{ marginTop: '12px' }}>
+        <ShareButtons url={invUrl} />
+      </div>
 
       {error && <p className="error">{error}</p>}
     </>

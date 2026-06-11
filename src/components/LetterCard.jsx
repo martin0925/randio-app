@@ -1,7 +1,10 @@
-import { findAct, parseDate, fmtDate, countdownText, mapsUrl } from '../utils'
+import { useState } from 'react'
+import { findAct, parseDate, fmtDate, countdownCompact, mapsUrl } from '../utils'
 import { DAYS, MONTHS_GEN } from '../constants'
 
-export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, onEdit }) {
+export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, onEdit, isCreator, onSendReply }) {
+  const [replyText, setReplyText] = useState('')
+
   if (!plan) return null
 
   const known = findAct(plan.aktivita)
@@ -10,7 +13,6 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
   const datumOptions = plan.datumOptions || [plan.datum]
   const multiChoice = datumOptions.length > 1 && plan.stav !== 'potvrzeno'
-
   const confirmDisabled = multiChoice && !selectedOpt
 
   let salutation
@@ -30,11 +32,10 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
   }
 
   const activeDatum = selectedOpt || plan.datum
-  const countdown = activeDatum ? countdownText(activeDatum) : null
-  const showCountdown = multiChoice ? (selectedOpt && countdown) : countdown
+  const compact = activeDatum ? countdownCompact(activeDatum) : null
+  const showCountdown = compact && plan.stav !== 'potvrzeno' && (!multiChoice || selectedOpt)
 
   const datumToShow = multiChoice ? null : plan.datum
-
   const metaRows = []
   if (datumToShow) metaRows.push({ icon: '📅', text: fmtDate(parseDate(datumToShow)), link: null })
   metaRows.push({ icon: '🕐', text: plan.cas, link: null })
@@ -42,18 +43,25 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
   let badgeText, badgeClass
   if (plan.stav === 'potvrzeno') {
-    badgeText = 'potvrzeno ✓'
-    badgeClass = 'badge potvrzeno'
+    badgeText = 'potvrzeno ✓'; badgeClass = 'badge potvrzeno'
   } else if (plan.stav === 'protinavrh') {
-    badgeText = 'protinávrh — čeká na odpověď'
-    badgeClass = 'badge protinavrh'
+    badgeText = 'protinávrh — čeká na odpověď'; badgeClass = 'badge protinavrh'
   } else {
-    badgeText = 'čeká na odpověď'
-    badgeClass = 'badge navrh'
+    badgeText = 'čeká na odpověď'; badgeClass = 'badge navrh'
+  }
+
+  function handleSend() {
+    const txt = replyText.trim()
+    if (!txt) return
+    onSendReply(txt)
+    setReplyText('')
   }
 
   return (
     <div className={`letter-card${plan.stav === 'potvrzeno' ? ' confetti-burst' : ''}`}>
+
+      {showCountdown && <span className="countdown-chip">{compact}</span>}
+
       <p className="letter-salutation">{salutation}</p>
       <p className="letter-activity">
         <span className="em">{emoji}</span>{label}
@@ -80,25 +88,47 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
         </div>
       )}
 
-      {showCountdown && (
-        <div className="countdown-box">{countdown}</div>
-      )}
-
       <div className="letter-meta">
         {metaRows.map(({ icon, text, link }) => (
           <div key={icon} className="letter-meta-row">
             <strong>{icon}</strong>
             <span>
-              {link ? (
-                <a href={link} target="_blank" rel="noopener">{text}</a>
-              ) : text}
+              {link ? <a href={link} target="_blank" rel="noopener">{text}</a> : text}
             </span>
           </div>
         ))}
       </div>
 
       {plan.zprava && (
-        <blockquote className="letter-message">„{plan.zprava}"</blockquote>
+        <div className="chat-bubble-wrap sent">
+          {plan.od && <span className="chat-label">{plan.od}</span>}
+          <div className="chat-bubble sent">{plan.zprava}</div>
+        </div>
+      )}
+
+      {plan.odpoved && (
+        <div className="chat-bubble-wrap sent">
+          {plan.komu && <span className="chat-label">{plan.komu}</span>}
+          <div className="chat-bubble reply">{plan.odpoved}</div>
+        </div>
+      )}
+
+      {!isCreator && !plan.odpoved && plan.stav !== 'potvrzeno' && (
+        <div className="chat-input-row">
+          <input
+            className="input"
+            style={{ margin: 0 }}
+            type="text"
+            placeholder="Napiš odpověď…"
+            maxLength={200}
+            value={replyText}
+            onChange={(e) => setReplyText(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+          />
+          <button className="chat-send-btn" disabled={!replyText.trim()} onClick={handleSend}>
+            Odeslat
+          </button>
+        </div>
       )}
 
       <hr className="letter-divider" />
@@ -110,11 +140,7 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
       {plan.stav !== 'potvrzeno' && (
         <div className="row">
-          <button
-            className="primary"
-            disabled={confirmDisabled}
-            onClick={onConfirm}
-          >
+          <button className="primary" disabled={confirmDisabled} onClick={onConfirm}>
             Jdu do toho! 💗
           </button>
           <button className="secondary" onClick={onEdit}>

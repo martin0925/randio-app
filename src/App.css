@@ -119,10 +119,18 @@ textarea.input { resize: vertical; min-height: 72px; margin-top: 10px; }
   background: linear-gradient(90deg, #e2477d, #f48fb1, #e2477d);
 }
 
+.countdown-chip {
+  position: absolute; top: 12px; right: 14px;
+  background: #ffeef4; border: 1px solid #f4a9c4;
+  color: #c2185b; font-size: .72rem; font-weight: 700;
+  padding: 3px 10px; border-radius: 999px;
+  white-space: nowrap;
+}
+
 .letter-salutation {
   font-family: 'Cormorant Garamond', serif;
   font-size: 1.15rem; font-style: italic; color: #b06a85;
-  margin: 0 0 18px;
+  margin: 0 0 18px; padding-right: 88px;
 }
 
 .letter-activity {
@@ -138,12 +146,40 @@ textarea.input { resize: vertical; min-height: 72px; margin-top: 10px; }
 .letter-meta-row a { color: #c2185b; text-decoration: none; font-weight: 600; }
 .letter-meta-row a:hover { text-decoration: underline; }
 
-.letter-message {
-  margin: 18px 0 0;
-  font-family: 'Cormorant Garamond', serif; font-style: italic;
-  font-size: 1.08rem; color: #7a3850; line-height: 1.6;
-  border-left: 3px solid #ffc3d8; padding-left: 14px;
+.chat-bubble-wrap {
+  display: flex; flex-direction: column; align-items: flex-end; margin: 16px 0 0;
 }
+
+.chat-label {
+  font-size: .7rem; color: #b06a85; margin-bottom: 3px; padding: 0 4px;
+}
+
+.chat-bubble {
+  max-width: 82%; padding: 10px 14px;
+  font-size: .92rem; line-height: 1.55; word-break: break-word;
+  border-radius: 18px 18px 4px 18px;
+}
+.chat-bubble.sent {
+  background: linear-gradient(120deg, #f48fb1, #e2477d);
+  color: #fff;
+}
+.chat-bubble.reply {
+  background: #fff0f5; color: #7a2040;
+  border: 1px solid #ffc3d8;
+}
+
+.chat-input-row {
+  display: flex; gap: 8px; align-items: center; margin-top: 14px;
+}
+.chat-input-row .input { margin: 0; flex: 1; }
+.chat-send-btn {
+  flex-shrink: 0; background: #d8366c; color: #fff; border: none;
+  border-radius: 999px; padding: 10px 16px; font-family: inherit;
+  font-size: .88rem; font-weight: 600; cursor: pointer;
+  transition: background .15s; white-space: nowrap;
+}
+.chat-send-btn:hover:not(:disabled) { background: #a8244e; }
+.chat-send-btn:disabled { opacity: .4; cursor: default; }
 
 .letter-sign {
   text-align: right; margin-top: 20px;
@@ -220,13 +256,6 @@ button:focus-visible, .input:focus-visible { outline: 3px solid #c2185b; outline
   100% { transform: scale(1); }
 }
 
-/* ── COUNTDOWN ──────────────────────────────────────────── */
-.countdown-box {
-  text-align: center; background: linear-gradient(120deg,#fff0f5,#ffe1ec);
-  border: 1px solid #ffc3d8; border-radius: 12px;
-  padding: 10px 16px; margin: 10px 0 4px;
-  font-weight: 700; color: #c2185b; font-size: 1.08rem;
-}
 
 /* ── DATE OPTIONS (invite) ──────────────────────────────── */
 .date-opts-label { font-size: .85rem; color: #b06a85; margin: 0 0 8px; }

@@ -1,5 +1,16 @@
 import { ACTIVITIES, DAYS, MONTHS_GEN } from './constants'
 
+export function countdownCompact(datumStr) {
+  const date = parseDate(datumStr)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  const diff = Math.round((date - today) / 86400000)
+  if (diff < 0) return null
+  if (diff === 0) return 'Dnes 🎉'
+  if (diff === 1) return 'Zítra 💗'
+  return `za ${diff} dní`
+}
+
 export const pad = (n) => (n < 10 ? '0' + n : '' + n)
 
 export const parseDate = (s) => {
@@ -59,4 +70,17 @@ export function downloadIcs(plan) {
   a.download = 'rande.ics'
   a.click()
   URL.revokeObjectURL(a.href)
+}
+
+export function openInCalendar(plan) {
+  const dp = plan.datum.split('-').map(Number)
+  const [h, m] = plan.cas.split(':').map(Number)
+  const fmtDt = (y, mo, d, hh, mm) => `${y}${pad(mo)}${pad(d)}T${pad(hh)}${pad(mm)}00`
+  const start = fmtDt(dp[0], dp[1], dp[2], h, m)
+  const end = fmtDt(dp[0], dp[1], dp[2], (h + 2) % 24, m)
+  const title = `Rande 💗 ${findAct(plan.aktivita)?.label || plan.aktivita}`
+  let url = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(title)}&dates=${start}/${end}`
+  if (plan.misto) url += `&location=${encodeURIComponent(plan.misto)}`
+  if (plan.zprava) url += `&details=${encodeURIComponent(plan.zprava)}`
+  window.open(url, '_blank', 'noopener')
 }
