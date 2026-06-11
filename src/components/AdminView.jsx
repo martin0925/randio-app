@@ -85,6 +85,9 @@ function PrefsPanel({ uid }) {
   const [pohlaviPartnera, setPohlaviPartnera] = useState('')
   const [osloveniPartnera, setOsloveniPartnera] = useState('')
   const [oblibene, setOblibene] = useState([])
+  const [vlastniAktivity, setVlastniAktivity] = useState([])
+  const [newEmoji, setNewEmoji] = useState('')
+  const [newLabel, setNewLabel] = useState('')
   const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
@@ -99,6 +102,7 @@ function PrefsPanel({ uid }) {
         setPohlaviPartnera(d.pohlavi_partnera || '')
         setOsloveniPartnera(d.osloveni_partnera || '')
         setOblibene(d.oblibene_aktivity || [])
+        setVlastniAktivity(d.vlastni_aktivity || [])
       }
       setLoaded(true)
     })
@@ -111,6 +115,7 @@ function PrefsPanel({ uid }) {
       pohlavi, pohlavi_partnera: pohlaviPartnera,
       osloveni_partnera: osloveniPartnera,
       oblibene_aktivity: oblibene,
+      vlastni_aktivity: vlastniAktivity,
       updated: serverTimestamp(),
     }, { merge: true })
     setSaving(false)
@@ -120,6 +125,18 @@ function PrefsPanel({ uid }) {
 
   function toggleOblibena(id) {
     setOblibene((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
+  }
+
+  function addVlastni() {
+    const label = newLabel.trim()
+    if (!label) return
+    setVlastniAktivity((prev) => [...prev, { emoji: newEmoji.trim(), label }])
+    setNewEmoji('')
+    setNewLabel('')
+  }
+
+  function removeVlastni(idx) {
+    setVlastniAktivity((prev) => prev.filter((_, i) => i !== idx))
   }
 
   if (!loaded) return <p className="sub" style={{ padding: '24px 0' }}>Načítám…</p>
@@ -179,6 +196,41 @@ function PrefsPanel({ uid }) {
               <span>{a.emoji}</span>{a.label}
             </button>
           ))}
+        </div>
+      </div>
+
+      <div className="pref-section">
+        <label className="pref-label">✨ Vlastní aktivity</label>
+        <p className="pref-hint">Zobrazí se jako chips v "Co podnikneme?" při tvorbě pozvánky</p>
+        <div className="custom-acts-list">
+          {vlastniAktivity.map((a, i) => (
+            <div key={i} className="custom-act-item">
+              <span className="custom-act-text">{a.emoji ? `${a.emoji} ` : ''}{a.label}</span>
+              <button className="custom-act-remove" onClick={() => removeVlastni(i)} aria-label="Odebrat">×</button>
+            </div>
+          ))}
+        </div>
+        <div className="custom-act-form">
+          <input
+            className="input custom-act-emoji-input"
+            type="text"
+            placeholder="🎾"
+            value={newEmoji}
+            onChange={(e) => setNewEmoji(e.target.value)}
+          />
+          <input
+            className="input custom-act-label-input"
+            type="text"
+            placeholder="Tenisové rande"
+            value={newLabel}
+            onChange={(e) => setNewLabel(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && addVlastni()}
+          />
+          <button
+            className="custom-act-add-btn"
+            onClick={addVlastni}
+            disabled={!newLabel.trim()}
+          >+ Přidat</button>
         </div>
       </div>
 

@@ -66,9 +66,11 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         komu:          s.komu          || prefs.jmeno_partnera     || '',
         osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
       }))
+      setCustomActivities(prefs.vlastni_aktivity || [])
     })
   }, [editDoc])
 
+  const [customActivities, setCustomActivities] = useState([])
   const [success, setSuccess] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
   const [shareUrl, setShareUrl] = useState(null)
@@ -279,6 +281,18 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
               <span className="em">{a.emoji}</span>{a.label}
             </button>
           ))}
+          {customActivities.map((a, i) => {
+            const fullText = [a.emoji, a.label].filter(Boolean).join(' ')
+            return (
+              <button
+                key={`ca_${i}`}
+                className={`act${!act && customAct === fullText ? ' sel' : ''}`}
+                onClick={() => setState((s) => ({ ...s, act: null, customAct: fullText }))}
+              >
+                {a.emoji && <span className="em">{a.emoji}</span>}{a.label}
+              </button>
+            )
+          })}
         </div>
         <input
           className="input"

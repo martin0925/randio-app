@@ -99,6 +99,39 @@
 .pref-act.sel { background: #d8366c; border-color: #d8366c; color: #fff; transform: translateY(-2px); }
 .pref-act span { font-size: 1.4rem; }
 
+/* ── CUSTOM ACTIVITIES ───────────────────────────────────── */
+.custom-acts-list {
+  display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;
+}
+.custom-act-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: #fff7fa; border: 1px solid #ffc3d8; border-radius: 10px;
+  padding: 8px 12px; font-size: .88rem; color: #5a2438;
+}
+.custom-act-text { flex: 1; }
+.custom-act-remove {
+  background: none; border: none; color: #d8366c;
+  font-size: 1.2rem; line-height: 1; font-weight: 700;
+  cursor: pointer; padding: 0 0 0 10px;
+}
+.custom-act-remove:hover { color: #a8244e; }
+.custom-act-form {
+  display: flex; gap: 6px; align-items: stretch; margin-top: 4px;
+}
+.custom-act-emoji-input {
+  width: 58px !important; flex-shrink: 0; text-align: center;
+  padding-left: 6px !important; padding-right: 6px !important;
+}
+.custom-act-label-input { flex: 1; }
+.custom-act-add-btn {
+  flex-shrink: 0; border: 1px solid #d8366c; background: #d8366c;
+  color: #fff; border-radius: 999px; padding: 10px 16px;
+  font-family: inherit; font-size: .85rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: background .15s;
+}
+.custom-act-add-btn:hover:not(:disabled) { background: #a8244e; border-color: #a8244e; }
+.custom-act-add-btn:disabled { opacity: .45; cursor: default; }
+
 /* ── INVITE LIST ─────────────────────────────────────────── */
 .invite-list { display: flex; flex-direction: column; gap: 10px; }
 
