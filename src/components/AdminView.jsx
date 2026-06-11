@@ -312,12 +312,14 @@ function FriendsPanel({ user }) {
     setPanelLoading(true)
     Promise.all([
       getDoc(doc(db, 'users', user.uid)),
-      getDocs(query(collection(db, 'friend_requests'), where('to_uid', '==', user.uid), where('status', '==', 'pending'))),
+      getDocs(query(collection(db, 'friend_requests'), where('to_uid', '==', user.uid))),
     ]).then(([userSnap, reqSnap]) => {
       setContacts(userSnap.data()?.contacts || [])
-      setPending(reqSnap.docs.map((d) => ({ id: d.id, ...d.data() })))
+      setPending(reqSnap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((r) => r.status === 'pending'))
       setPanelLoading(false)
-    })
+    }).catch(() => setPanelLoading(false))
   }, [user.uid, refreshKey])
 
   async function handleSearch() {
@@ -334,13 +336,12 @@ function FriendsPanel({ user }) {
       setSearchResult({ type: 'not_found' })
     } else {
       const found = { uid: snap.docs[0].id, ...snap.docs[0].data() }
-      const existingReq = await getDocs(query(
-        collection(db, 'friend_requests'),
-        where('from_uid', '==', user.uid),
-        where('to_uid', '==', found.uid),
-        where('status', '==', 'pending')
-      ))
-      setSearchResult(existingReq.empty ? { type: 'found', user: found } : { type: 'already_sent' })
+      const existingReq = await getDocs(query(collection(db, 'friend_requests'), where('from_uid', '==', user.uid)))
+      const alreadySent = existingReq.docs.some((d) => {
+        const r = d.data()
+        return r.to_uid === found.uid && r.status === 'pending'
+      })
+      setSearchResult(alreadySent ? { type: 'already_sent' } : { type: 'found', user: found })
     }
     setSearching(false)
   }
