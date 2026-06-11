@@ -305,11 +305,30 @@ function FriendsPanel({ user }) {
     Promise.all([
       getDoc(doc(db, 'users', user.uid)),
       getDocs(query(collection(db, 'friend_requests'), where('to_uid', '==', user.uid))),
-    ]).then(([userSnap, reqSnap]) => {
-      setContacts(userSnap.data()?.contacts || [])
-      setPending(reqSnap.docs
+      getDocs(query(collection(db, 'friend_requests'), where('from_uid', '==', user.uid))),
+    ]).then(async ([userSnap, receivedSnap, sentSnap]) => {
+      const existingContacts = userSnap.data()?.contacts || []
+
+      setPending(receivedSnap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
         .filter((r) => r.status === 'pending'))
+
+      // Auto-sync accepted sent requests into own contacts
+      const acceptedSent = sentSnap.docs
+        .map((d) => d.data())
+        .filter((r) => r.status === 'accepted' && !existingContacts.some((c) => c.uid === r.to_uid))
+
+      if (acceptedSent.length > 0) {
+        const merged = [
+          ...existingContacts,
+          ...acceptedSent.map((r) => ({ uid: r.to_uid, jmeno: r.to_name || '', email: r.to_email || '', photoURL: r.to_photo || '' })),
+        ]
+        await updateDoc(doc(db, 'users', user.uid), { contacts: merged }).catch(() => {})
+        setContacts(merged)
+      } else {
+        setContacts(existingContacts)
+      }
+
       setPanelLoading(false)
     }).catch(() => setPanelLoading(false))
   }, [user.uid, refreshKey])
@@ -350,6 +369,9 @@ function FriendsPanel({ user }) {
       from_email: user.email || '',
       from_photo: user.photoURL || '',
       to_uid: toUser.uid,
+      to_name: toUser.jmeno || '',
+      to_email: toUser.email || '',
+      to_photo: toUser.photoURL || '',
       status: 'pending',
       created: serverTimestamp(),
     })
@@ -357,22 +379,13 @@ function FriendsPanel({ user }) {
   }
 
   async function acceptRequest(req) {
-    const [mySnap, theirSnap] = await Promise.all([
-      getDoc(doc(db, 'users', user.uid)),
-      getDoc(doc(db, 'users', req.from_uid)),
-    ])
+    const mySnap = await getDoc(doc(db, 'users', user.uid))
     const myContacts = mySnap.data()?.contacts || []
-    const theirContacts = theirSnap.data()?.contacts || []
-    const myJmeno = mySnap.data()?.jmeno || user.displayName || ''
-
     const newContact = { uid: req.from_uid, jmeno: req.from_name, email: req.from_email, photoURL: req.from_photo }
-    const meAsContact = { uid: user.uid, jmeno: myJmeno, email: user.email || '', photoURL: user.photoURL || '' }
 
     const updates = [updateDoc(doc(db, 'friend_requests', req.id), { status: 'accepted' })]
     if (!myContacts.some((c) => c.uid === req.from_uid))
       updates.push(updateDoc(doc(db, 'users', user.uid), { contacts: [...myContacts, newContact] }))
-    if (!theirContacts.some((c) => c.uid === user.uid))
-      updates.push(updateDoc(doc(db, 'users', req.from_uid), { contacts: [...theirContacts, meAsContact] }))
     await Promise.all(updates)
     refresh()
   }
