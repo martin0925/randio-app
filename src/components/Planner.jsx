@@ -4,6 +4,7 @@ import { onAuthStateChanged } from 'firebase/auth'
 import { db, auth } from '../firebase'
 import { ACTIVITIES, TIMES, DAYS, MONTHS_GEN, MONTHS } from '../constants'
 import { pad, fmtD, parseDate, findAct, baseUrl } from '../utils'
+import ClockPicker from './ClockPicker'
 
 export default function Planner({ editDoc = null, prefill = null, onEditDone = null }) {
   const today = new Date()
@@ -95,6 +96,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   const chosenTime = () => customTime || time
   const chosenAct = () => customAct.trim() || act
   const chosenDates = () => [...dates].sort((a, b) => a - b)
+
 
   const hasDates = dates.length > 0
   const ready = hasDates && chosenTime() && chosenAct()
@@ -287,24 +289,22 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
 
       {/* Time */}
       <section className="section">
-        <h2 className="label">🕐 V kolik hodin?</h2>
-        <div className="chips">
+        <h2 className="label">
+          🕐 V kolik hodin?
+          {chosenTime() && <span className="time-selected-label">{chosenTime()}</span>}
+        </h2>
+        <div className="chips" style={{ marginBottom: 4 }}>
           {TIMES.map((t) => (
             <button
               key={t}
               className={`chip${!customTime && time === t ? ' sel' : ''}`}
               onClick={() => setState((s) => ({ ...s, time: t, customTime: '' }))}
-            >
-              {t}
-            </button>
+            >{t}</button>
           ))}
         </div>
-        <input
-          className="input"
-          type="time"
-          aria-label="Vlastní čas"
-          value={customTime}
-          onChange={(e) => setState((s) => ({ ...s, customTime: e.target.value, time: null }))}
+        <ClockPicker
+          value={customTime || null}
+          onChange={(v) => setState((s) => ({ ...s, customTime: v, time: null }))}
         />
       </section>
 
