@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
 import confetti from 'canvas-confetti'
-import { db } from '../firebase'
+import { db, auth } from '../firebase'
 import { baseUrl, openInCalendar } from '../utils'
 import EnvelopeView from './EnvelopeView'
 import LetterCard from './LetterCard'
@@ -31,6 +31,7 @@ export default function InviteView({ randeId }) {
   const prevStav = useRef(null)
 
   const isCreator = localStorage.getItem(`creator_${randeId}`) === '1'
+  const profileLinked = useRef(false)
 
   useEffect(() => {
     if (plan?.stav === 'potvrzeno' && prevStav.current && prevStav.current !== 'potvrzeno') {
@@ -38,6 +39,14 @@ export default function InviteView({ randeId }) {
     }
     if (plan?.stav) prevStav.current = plan.stav
   }, [plan?.stav])
+
+  useEffect(() => {
+    if (!plan || isCreator || profileLinked.current) return
+    const user = auth.currentUser
+    if (!user || plan.uid_prijemce) return
+    profileLinked.current = true
+    updateDoc(doc(db, 'rande', randeId), { uid_prijemce: user.uid }).catch(() => {})
+  }, [plan])
 
   useEffect(() => {
     const ref = doc(db, 'rande', randeId)

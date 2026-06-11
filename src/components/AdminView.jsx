@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth'
-import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useAuth } from '../hooks/useAuth'
 import { ACTIVITIES } from '../constants'
@@ -289,10 +289,18 @@ function InviteList({ uid, filter }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    getDocs(query(collection(db, 'rande'), where('uid', '==', uid))).then((snap) => {
-      const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }))
-      docs.sort((a, b) => (b.vytvoreno?.seconds || 0) - (a.vytvoreno?.seconds || 0))
-      setInvites(docs)
+    Promise.all([
+      getDocs(query(collection(db, 'rande'), where('uid', '==', uid))),
+      getDocs(query(collection(db, 'rande'), where('uid_prijemce', '==', uid))),
+    ]).then(([sentSnap, receivedSnap]) => {
+      const sent = sentSnap.docs.map((d) => ({ id: d.id, ...d.data(), _role: 'sent' }))
+      const sentIds = new Set(sent.map((d) => d.id))
+      const received = receivedSnap.docs
+        .filter((d) => !sentIds.has(d.id))
+        .map((d) => ({ id: d.id, ...d.data(), _role: 'received' }))
+      const all = [...sent, ...received]
+      all.sort((a, b) => (b.vytvoreno?.seconds || 0) - (a.vytvoreno?.seconds || 0))
+      setInvites(all)
       setLoading(false)
     })
   }, [uid])
@@ -329,6 +337,7 @@ function InviteList({ uid, filter }) {
 function InviteItem({ invite, onDelete }) {
   const [confirming, setConfirming] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const isReceived = invite._role === 'received'
 
   const known = findAct(invite.aktivita)
   const label = known ? `${known.emoji} ${known.label}` : invite.aktivita
@@ -345,28 +354,44 @@ function InviteItem({ invite, onDelete }) {
     onDelete()
   }
 
+  async function handleUnlink() {
+    setDeleting(true)
+    await updateDoc(doc(db, 'rande', invite.id), { uid_prijemce: deleteField() })
+    onDelete()
+  }
+
   return (
     <div className="invite-item">
       <div className="invite-item-top">
         <span className="invite-activity">{label}</span>
-        <span className={`badge ${invite.stav}`}>{stavLabel}</span>
+        <div style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <span className={`invite-role-chip${isReceived ? ' received' : ''}`}>
+            {isReceived ? '📥 Přijatá' : '📤 Odeslaná'}
+          </span>
+          <span className={`badge ${invite.stav}`}>{stavLabel}</span>
+        </div>
       </div>
       <div className="invite-item-bottom">
         <span className="invite-date">📅 {dateStr} · 🕐 {invite.cas}</span>
-        {invite.komu && <span className="invite-komu">→ {invite.komu}</span>}
+        {isReceived
+          ? invite.od && <span className="invite-komu">Od: {invite.od}</span>
+          : invite.komu && <span className="invite-komu">→ {invite.komu}</span>
+        }
         <a href={`${baseUrl()}?id=${invite.id}`} className="invite-link">Otevřít →</a>
       </div>
       <div className="invite-item-actions">
         {confirming ? (
           <>
-            <span className="invite-del-hint">Opravdu smazat?</span>
-            <button className="invite-del-confirm" onClick={handleDelete} disabled={deleting}>
-              {deleting ? '…' : 'Smazat'}
+            <span className="invite-del-hint">{isReceived ? 'Odebrat z profilu?' : 'Opravdu smazat?'}</span>
+            <button className="invite-del-confirm" onClick={isReceived ? handleUnlink : handleDelete} disabled={deleting}>
+              {deleting ? '…' : isReceived ? 'Odebrat' : 'Smazat'}
             </button>
             <button className="invite-del-cancel" onClick={() => setConfirming(false)}>Zrušit</button>
           </>
         ) : (
-          <button className="invite-del-btn" onClick={() => setConfirming(true)}>🗑 Smazat</button>
+          <button className="invite-del-btn" onClick={() => setConfirming(true)}>
+            {isReceived ? '× Odebrat z profilu' : '🗑 Smazat'}
+          </button>
         )}
       </div>
     </div>
