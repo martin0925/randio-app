@@ -59,26 +59,30 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       currentUserRef.current = user
       setCurrentUser(user)
       if (editDoc || !user) return
-      const snap = await getDoc(doc(db, 'users', user.uid))
-      if (!snap.exists()) return
-      const prefs = snap.data()
-      setContacts(prefs.contacts || [])
-      setState((s) => ({
-        ...s,
-        od:            s.od            || prefs.jmeno              || '',
-        komu:          s.komu          || prefs.jmeno_partnera     || '',
-        osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
-      }))
-      if (prefs.aktivity?.length) {
-        setPlannerActs(prefs.aktivity.filter((a) => a.active !== false))
-      } else if (prefs.vlastni_aktivity?.length || prefs.oblibene_aktivity?.length) {
-        // migrate from old format
-        const oblibene = prefs.oblibene_aktivity || []
-        const all = [
-          ...ACTIVITIES,
-          ...(prefs.vlastni_aktivity || []).map((a) => ({ ...a, id: a.id || a.label })),
-        ]
-        setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid))
+        if (!snap.exists()) return
+        const prefs = snap.data()
+        setContacts(prefs.contacts || [])
+        setState((s) => ({
+          ...s,
+          od:            s.od            || prefs.jmeno              || '',
+          komu:          s.komu          || prefs.jmeno_partnera     || '',
+          osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
+        }))
+        if (prefs.aktivity?.length) {
+          setPlannerActs(prefs.aktivity.filter((a) => a.active !== false))
+        } else if (prefs.vlastni_aktivity?.length || prefs.oblibene_aktivity?.length) {
+          // migrate from old format
+          const oblibene = prefs.oblibene_aktivity || []
+          const all = [
+            ...ACTIVITIES,
+            ...(prefs.vlastni_aktivity || []).map((a) => ({ ...a, id: a.id || a.label })),
+          ]
+          setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
+        }
+      } catch (e) {
+        console.error('Prefs load failed:', e.code || e.message)
       }
     })
   }, [editDoc])

@@ -95,6 +95,7 @@ function PrefsPanel({ uid }) {
   const [loaded, setLoaded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
+  const [saveError, setSaveError] = useState(null)
 
   useEffect(() => {
     getDoc(doc(db, 'users', uid)).then((snap) => {
@@ -107,9 +108,9 @@ function PrefsPanel({ uid }) {
         setPohlaviPartnera(d.pohlavi_partnera || '')
         setOsloveniPartnera(d.osloveni_partnera || '')
 
-        if (d.aktivity) {
+        if (d.aktivity?.length) {
           setAktivity(d.aktivity)
-        } else {
+        } else if (d.vlastni_aktivity?.length || d.oblibene_aktivity?.length) {
           // migrate from old vlastni_aktivity + oblibene_aktivity
           const oblibene = d.oblibene_aktivity || []
           const vlastni = (d.vlastni_aktivity || []).map((a) => ({
@@ -119,6 +120,8 @@ function PrefsPanel({ uid }) {
             ...a, active: oblibene.length === 0 || oblibene.includes(a.id),
           }))
           setAktivity([...defaults, ...vlastni])
+        } else {
+          setAktivity(seed)
         }
       } else {
         setAktivity(seed)
@@ -129,16 +132,22 @@ function PrefsPanel({ uid }) {
 
   async function handleSave() {
     setSaving(true)
-    await setDoc(doc(db, 'users', uid), {
-      jmeno, jmeno_partnera: jmenoPartnera,
-      pohlavi, pohlavi_partnera: pohlaviPartnera,
-      osloveni_partnera: osloveniPartnera,
-      aktivity,
-      updated: serverTimestamp(),
-    }, { merge: true })
-    setSaving(false)
-    setSaved(true)
-    setTimeout(() => setSaved(false), 2500)
+    setSaveError(null)
+    try {
+      await setDoc(doc(db, 'users', uid), {
+        jmeno, jmeno_partnera: jmenoPartnera,
+        pohlavi, pohlavi_partnera: pohlaviPartnera,
+        osloveni_partnera: osloveniPartnera,
+        aktivity,
+        updated: serverTimestamp(),
+      }, { merge: true })
+      setSaved(true)
+      setTimeout(() => setSaved(false), 2500)
+    } catch (e) {
+      setSaveError('Uložení selhalo: ' + (e.message || e.code || 'neznámá chyba'))
+    } finally {
+      setSaving(false)
+    }
   }
 
   function toggleAktivita(id) {
@@ -284,6 +293,7 @@ function PrefsPanel({ uid }) {
       <button className="cta" onClick={handleSave} disabled={saving}>
         {saved ? 'Uloženo ✓' : saving ? 'Ukládám…' : 'Uložit preference'}
       </button>
+      {saveError && <p className="error" style={{ marginTop: 10 }}>{saveError}</p>}
     </div>
   )
 }
