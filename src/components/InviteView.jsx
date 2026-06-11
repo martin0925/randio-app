@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { doc, onSnapshot, updateDoc, serverTimestamp } from 'firebase/firestore'
 import confetti from 'canvas-confetti'
 import { db, auth } from '../firebase'
+import { requestAndStorePush } from '../usePush'
 import { baseUrl, openInCalendar } from '../utils'
 import EnvelopeView from './EnvelopeView'
 import LetterCard from './LetterCard'
@@ -66,8 +67,10 @@ export default function InviteView({ randeId }) {
     const ref = doc(db, 'rande', randeId)
     const upd = { stav: 'potvrzeno', potvrzeno_kdy: serverTimestamp() }
     if (selectedOpt) upd.datum = selectedOpt
-    try { await updateDoc(ref, upd) }
-    catch (err) { setError('Potvrzení se nepodařilo uložit: ' + err.message) }
+    try {
+      await updateDoc(ref, upd)
+      requestAndStorePush(randeId, 'fcm_prijemce')
+    } catch (err) { setError('Potvrzení se nepodařilo uložit: ' + err.message) }
   }
 
   async function handleSendReply(text) {

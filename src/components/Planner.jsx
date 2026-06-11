@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import { collection, addDoc, updateDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import { db, auth } from '../firebase'
+import { requestAndStorePush } from '../usePush'
 import { ACTIVITIES, TIMES, DAYS, MONTHS_GEN, MONTHS } from '../constants'
 import { pad, fmtD, parseDate, findAct, baseUrl } from '../utils'
 import ClockPicker from './ClockPicker'
@@ -173,10 +174,12 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
 
     try {
       if (editDoc) {
+        const isCreatorEdit = localStorage.getItem(`creator_${editDoc.id}`) === '1'
         await updateDoc(editDoc, {
           ...plan,
           stav: 'protinavrh',
           upraveno_kdy: serverTimestamp(),
+          upravil: isCreatorEdit ? 'tvurce' : 'prijemce',
         })
         setSuccessMsg('Protinávrh uložen ✓ Druhá strana ho uvidí na stejném odkazu.')
         setSuccess(true)
@@ -191,6 +194,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           ...(currentUserRef.current ? { uid: currentUserRef.current.uid } : {}),
         })
         localStorage.setItem(`creator_${docRef.id}`, '1')
+        requestAndStorePush(docRef.id, 'fcm_creator')
         const url = `${baseUrl()}?id=${docRef.id}`
         const txt = plan.od ? `${plan.od} tě zve na rande!` : 'Pozvi svou lásku na rande 💗'
         setShareUrl(url)
