@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth'
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, addDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, getDocFromServer, setDoc, deleteDoc, updateDoc, deleteField, addDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useAuth } from '../hooks/useAuth'
 import { ACTIVITIES } from '../constants'
@@ -98,7 +98,7 @@ function PrefsPanel({ uid }) {
   const [saveError, setSaveError] = useState(null)
 
   useEffect(() => {
-    getDoc(doc(db, 'users', uid)).then((snap) => {
+    getDocFromServer(doc(db, 'users', uid)).then((snap) => {
       const seed = ACTIVITIES.map((a) => ({ ...a, active: true }))
       if (snap.exists()) {
         const d = snap.data()
@@ -126,6 +126,10 @@ function PrefsPanel({ uid }) {
       } else {
         setAktivity(seed)
       }
+      setLoaded(true)
+    }).catch((e) => {
+      console.error('PrefsPanel load failed:', e.code || e.message)
+      setAktivity(ACTIVITIES.map((a) => ({ ...a, active: true })))
       setLoaded(true)
     })
   }, [uid])
@@ -313,7 +317,7 @@ function FriendsPanel({ user }) {
   useEffect(() => {
     setPanelLoading(true)
     Promise.all([
-      getDoc(doc(db, 'users', user.uid)),
+      getDocFromServer(doc(db, 'users', user.uid)),
       getDocs(query(collection(db, 'friend_requests'), where('to_uid', '==', user.uid))),
       getDocs(query(collection(db, 'friend_requests'), where('from_uid', '==', user.uid))),
     ]).then(async ([userSnap, receivedSnap, sentSnap]) => {
