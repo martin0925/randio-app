@@ -102,7 +102,20 @@ function PrefsPanel({ uid }) {
         setPohlavi(d.pohlavi || '')
         setPohlaviPartnera(d.pohlavi_partnera || '')
         setOsloveniPartnera(d.osloveni_partnera || '')
-        setAktivity(d.aktivity || seed)
+
+        if (d.aktivity) {
+          setAktivity(d.aktivity)
+        } else {
+          // migrate from old vlastni_aktivity + oblibene_aktivity
+          const oblibene = d.oblibene_aktivity || []
+          const vlastni = (d.vlastni_aktivity || []).map((a) => ({
+            ...a, id: a.id || `ca_${a.label}`, active: oblibene.length === 0 || oblibene.includes(a.id || a.label),
+          }))
+          const defaults = seed.map((a) => ({
+            ...a, active: oblibene.length === 0 || oblibene.includes(a.id),
+          }))
+          setAktivity([...defaults, ...vlastni])
+        }
       } else {
         setAktivity(seed)
       }

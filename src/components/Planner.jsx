@@ -68,6 +68,14 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       }))
       if (prefs.aktivity?.length) {
         setPlannerActs(prefs.aktivity.filter((a) => a.active !== false))
+      } else if (prefs.vlastni_aktivity?.length || prefs.oblibene_aktivity?.length) {
+        // migrate from old format
+        const oblibene = prefs.oblibene_aktivity || []
+        const all = [
+          ...ACTIVITIES,
+          ...(prefs.vlastni_aktivity || []).map((a) => ({ ...a, id: a.id || a.label })),
+        ]
+        setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
       }
     })
   }, [editDoc])
