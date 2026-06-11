@@ -188,6 +188,32 @@
 }
 .invite-link:hover { text-decoration: underline; }
 
+.invite-item-actions {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px; padding-top: 10px;
+  border-top: 1px dashed #ffd1e0;
+}
+.invite-del-hint { font-size: .8rem; color: #b06a85; flex: 1; }
+.invite-del-btn {
+  background: none; border: 1px solid #ffd1e0; color: #b06a85;
+  border-radius: 999px; padding: 5px 12px; font-family: inherit;
+  font-size: .78rem; font-weight: 600; cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+}
+.invite-del-btn:hover { background: #fde8e8; border-color: #e57373; color: #b71c1c; }
+.invite-del-confirm {
+  background: #b71c1c; color: #fff; border: none;
+  border-radius: 999px; padding: 5px 14px; font-family: inherit;
+  font-size: .78rem; font-weight: 600; cursor: pointer;
+}
+.invite-del-confirm:disabled { opacity: .5; cursor: default; }
+.invite-del-cancel {
+  background: none; border: 1px solid #ffd1e0; color: #b06a85;
+  border-radius: 999px; padding: 5px 12px; font-family: inherit;
+  font-size: .78rem; font-weight: 600; cursor: pointer;
+}
+.invite-del-cancel:hover { background: #ffe6ef; }
+
 .invite-empty {
   text-align: center; padding: 40px 20px;
   display: flex; flex-direction: column; align-items: center; gap: 10px;

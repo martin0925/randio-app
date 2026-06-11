@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth'
-import { doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useAuth } from '../hooks/useAuth'
 import { ACTIVITIES } from '../constants'
@@ -315,12 +315,21 @@ function InviteList({ uid, filter }) {
 
   return (
     <div className="invite-list">
-      {filtered.map((inv) => <InviteItem key={inv.id} invite={inv} />)}
+      {filtered.map((inv) => (
+        <InviteItem
+          key={inv.id}
+          invite={inv}
+          onDelete={() => setInvites((prev) => prev.filter((i) => i.id !== inv.id))}
+        />
+      ))}
     </div>
   )
 }
 
-function InviteItem({ invite }) {
+function InviteItem({ invite, onDelete }) {
+  const [confirming, setConfirming] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
   const known = findAct(invite.aktivita)
   const label = known ? `${known.emoji} ${known.label}` : invite.aktivita
   const dateStr = invite.datum ? fmtDate(parseDate(invite.datum)) : '—'
@@ -329,6 +338,12 @@ function InviteItem({ invite }) {
     protinavrh: 'protinávrh',
     potvrzeno: 'potvrzeno ✓',
   }[invite.stav] || invite.stav
+
+  async function handleDelete() {
+    setDeleting(true)
+    await deleteDoc(doc(db, 'rande', invite.id))
+    onDelete()
+  }
 
   return (
     <div className="invite-item">
@@ -340,6 +355,19 @@ function InviteItem({ invite }) {
         <span className="invite-date">📅 {dateStr} · 🕐 {invite.cas}</span>
         {invite.komu && <span className="invite-komu">→ {invite.komu}</span>}
         <a href={`${baseUrl()}?id=${invite.id}`} className="invite-link">Otevřít →</a>
+      </div>
+      <div className="invite-item-actions">
+        {confirming ? (
+          <>
+            <span className="invite-del-hint">Opravdu smazat?</span>
+            <button className="invite-del-confirm" onClick={handleDelete} disabled={deleting}>
+              {deleting ? '…' : 'Smazat'}
+            </button>
+            <button className="invite-del-cancel" onClick={() => setConfirming(false)}>Zrušit</button>
+          </>
+        ) : (
+          <button className="invite-del-btn" onClick={() => setConfirming(true)}>🗑 Smazat</button>
+        )}
       </div>
     </div>
   )
