@@ -84,8 +84,8 @@ function PrefsPanel({ uid }) {
   const [pohlavi, setPohlavi] = useState('')
   const [pohlaviPartnera, setPohlaviPartnera] = useState('')
   const [osloveniPartnera, setOsloveniPartnera] = useState('')
-  const [oblibene, setOblibene] = useState([])
-  const [vlastniAktivity, setVlastniAktivity] = useState([])
+  const [aktivity, setAktivity] = useState([])
+  const [editing, setEditing] = useState(null) // {idx, emoji, label}
   const [newEmoji, setNewEmoji] = useState('')
   const [newLabel, setNewLabel] = useState('')
   const [loaded, setLoaded] = useState(false)
@@ -94,6 +94,7 @@ function PrefsPanel({ uid }) {
 
   useEffect(() => {
     getDoc(doc(db, 'users', uid)).then((snap) => {
+      const seed = ACTIVITIES.map((a) => ({ ...a, active: true }))
       if (snap.exists()) {
         const d = snap.data()
         setJmeno(d.jmeno || '')
@@ -101,8 +102,9 @@ function PrefsPanel({ uid }) {
         setPohlavi(d.pohlavi || '')
         setPohlaviPartnera(d.pohlavi_partnera || '')
         setOsloveniPartnera(d.osloveni_partnera || '')
-        setOblibene(d.oblibene_aktivity || [])
-        setVlastniAktivity(d.vlastni_aktivity || [])
+        setAktivity(d.aktivity || seed)
+      } else {
+        setAktivity(seed)
       }
       setLoaded(true)
     })
@@ -114,8 +116,7 @@ function PrefsPanel({ uid }) {
       jmeno, jmeno_partnera: jmenoPartnera,
       pohlavi, pohlavi_partnera: pohlaviPartnera,
       osloveni_partnera: osloveniPartnera,
-      oblibene_aktivity: oblibene,
-      vlastni_aktivity: vlastniAktivity,
+      aktivity,
       updated: serverTimestamp(),
     }, { merge: true })
     setSaving(false)
@@ -123,23 +124,33 @@ function PrefsPanel({ uid }) {
     setTimeout(() => setSaved(false), 2500)
   }
 
-  function toggleOblibena(id) {
-    setOblibene((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])
+  function toggleAktivita(id) {
+    setAktivity((prev) => prev.map((a) => a.id === id ? { ...a, active: !a.active } : a))
   }
 
-  function addVlastni() {
+  function deleteAktivita(idx) {
+    setAktivity((prev) => prev.filter((_, i) => i !== idx))
+  }
+
+  function startEdit(idx) {
+    const a = aktivity[idx]
+    setEditing({ idx, emoji: a.emoji || '', label: a.label })
+  }
+
+  function saveEdit() {
+    if (!editing || !editing.label.trim()) return
+    setAktivity((prev) => prev.map((a, i) =>
+      i === editing.idx ? { ...a, emoji: editing.emoji.trim(), label: editing.label.trim() } : a
+    ))
+    setEditing(null)
+  }
+
+  function addAktivita() {
     const label = newLabel.trim()
     if (!label) return
-    setVlastniAktivity((prev) => [...prev, { id: `ca_${Date.now()}`, emoji: newEmoji.trim(), label }])
+    setAktivity((prev) => [...prev, { id: `ca_${Date.now()}`, emoji: newEmoji.trim(), label, active: true }])
     setNewEmoji('')
     setNewLabel('')
-  }
-
-  function removeVlastni(idx) {
-    const removed = vlastniAktivity[idx]
-    const aid = removed.id || removed.label
-    setVlastniAktivity((prev) => prev.filter((_, i) => i !== idx))
-    setOblibene((prev) => prev.filter((id) => id !== aid))
   }
 
   if (!loaded) return <p className="sub" style={{ padding: '24px 0' }}>Načítám…</p>
@@ -191,32 +202,45 @@ function PrefsPanel({ uid }) {
 
       <div className="pref-section">
         <label className="pref-label">💞 Aktivity v planneru</label>
-        <p className="pref-hint">
-          Zaškrtni, co se má zobrazovat. Vlastní přidáš níže, smažeš křížkem.
-          {oblibene.length === 0 && ' (žádný výběr = zobrazí se vše)'}
-        </p>
-        <div className="pref-acts">
-          {ACTIVITIES.map((a) => (
-            <button key={a.id} className={`pref-act${oblibene.includes(a.id) ? ' sel' : ''}`}
-              onClick={() => toggleOblibena(a.id)}>
-              <span>{a.emoji}</span>{a.label}
-            </button>
-          ))}
-          {vlastniAktivity.map((a, i) => {
-            const aid = a.id || a.label
+        <p className="pref-hint">Zaškrtnuté se zobrazí jako chips v planneru. Uprav nebo smaž libovolnou.</p>
+        <div className="act-list">
+          {aktivity.map((a, i) => {
+            if (editing && editing.idx === i) {
+              return (
+                <div key={a.id} className="act-list-row editing">
+                  <input
+                    className="input act-edit-emoji"
+                    value={editing.emoji}
+                    placeholder="🎾"
+                    onChange={(e) => setEditing((ed) => ({ ...ed, emoji: e.target.value }))}
+                  />
+                  <input
+                    className="input act-edit-label"
+                    value={editing.label}
+                    placeholder="Název aktivity"
+                    autoFocus
+                    onChange={(e) => setEditing((ed) => ({ ...ed, label: e.target.value }))}
+                    onKeyDown={(e) => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') setEditing(null) }}
+                  />
+                  <button className="act-edit-confirm" onClick={saveEdit} disabled={!editing.label.trim()}>✓</button>
+                  <button className="act-edit-cancel" onClick={() => setEditing(null)}>✗</button>
+                </div>
+              )
+            }
             return (
-              <div key={aid} className="pref-act-wrap">
-                <button className={`pref-act${oblibene.includes(aid) ? ' sel' : ''}`}
-                  onClick={() => toggleOblibena(aid)}>
-                  <span>{a.emoji || '✨'}</span>{a.label}
+              <div key={a.id} className={`act-list-row${a.active !== false ? ' on' : ''}`}>
+                <button className="act-toggle" onClick={() => toggleAktivita(a.id)}>
+                  {a.active !== false ? '✓' : ''}
                 </button>
-                <button className="pref-act-del" aria-label="Odebrat"
-                  onClick={(e) => { e.stopPropagation(); removeVlastni(i) }}>×</button>
+                <span className="act-list-emoji">{a.emoji}</span>
+                <span className="act-list-label">{a.label}</span>
+                <button className="act-list-btn" onClick={() => startEdit(i)} aria-label="Upravit">✎</button>
+                <button className="act-list-btn del" onClick={() => deleteAktivita(i)} aria-label="Smazat">×</button>
               </div>
             )
           })}
         </div>
-        <div className="custom-act-form" style={{ marginTop: 14 }}>
+        <div className="custom-act-form" style={{ marginTop: 12 }}>
           <input
             className="input custom-act-emoji-input"
             type="text"
@@ -227,14 +251,14 @@ function PrefsPanel({ uid }) {
           <input
             className="input custom-act-label-input"
             type="text"
-            placeholder="Tenisové rande"
+            placeholder="Název aktivity"
             value={newLabel}
             onChange={(e) => setNewLabel(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && addVlastni()}
+            onKeyDown={(e) => e.key === 'Enter' && addAktivita()}
           />
           <button
             className="custom-act-add-btn"
-            onClick={addVlastni}
+            onClick={addAktivita}
             disabled={!newLabel.trim()}
           >+ Přidat</button>
         </div>
