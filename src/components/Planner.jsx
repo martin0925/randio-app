@@ -50,11 +50,13 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   }
 
   const [state, setState] = useState(initState)
+  const [currentUser, setCurrentUser] = useState(auth.currentUser)
   const currentUserRef = useRef(auth.currentUser)
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (user) => {
       currentUserRef.current = user
+      setCurrentUser(user)
       if (editDoc || !user) return
       const snap = await getDoc(doc(db, 'users', user.uid))
       if (!snap.exists()) return
@@ -232,6 +234,16 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
 
   return (
     <>
+      {!editDoc && (
+        <div className="planner-topbar">
+          <a href={`${baseUrl()}?admin`} className="planner-user-btn" aria-label="Účet / Admin">
+            {currentUser?.photoURL
+              ? <img src={currentUser.photoURL} alt="" className="planner-user-avatar" referrerPolicy="no-referrer" />
+              : <span className="planner-user-icon">👤</span>
+            }
+          </a>
+        </div>
+      )}
       <h1 className="title">{title}</h1>
       <p className="sub">{subtitle}</p>
 
@@ -436,13 +448,6 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
 
       {error && <p className="error">{error}</p>}
 
-      {!editDoc && (
-        <div className="planner-footer">
-          <a href={`${baseUrl()}?admin`} className="admin-link">
-            ⚙️ {currentUserRef.current ? (currentUserRef.current.displayName?.split(' ')[0] || 'Účet') : 'Přihlásit se'}
-          </a>
-        </div>
-      )}
     </>
   )
 }
