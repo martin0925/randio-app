@@ -33,7 +33,7 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
   const activeDatum = selectedOpt || plan.datum
   const compact = activeDatum ? countdownCompact(activeDatum) : null
-  const showCountdown = compact && plan.stav !== 'potvrzeno' && (!multiChoice || selectedOpt)
+  const showCountdown = compact && (!multiChoice || selectedOpt)
 
   const datumToShow = multiChoice ? null : plan.datum
   const metaRows = []
