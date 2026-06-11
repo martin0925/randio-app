@@ -53,47 +53,35 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   const [state, setState] = useState(initState)
   const [currentUser, setCurrentUser] = useState(auth.currentUser)
   const currentUserRef = useRef(auth.currentUser)
+  const [contacts, setContacts] = useState([])
 
-  // Track auth state — runs once on mount
   useEffect(() => {
-    return onAuthStateChanged(auth, (user) => {
+    return onAuthStateChanged(auth, async (user) => {
       currentUserRef.current = user
       setCurrentUser(user)
+      if (editDoc || !user) return
+      const snap = await getDocFromServer(doc(db, 'users', user.uid)).catch(() => null)
+      if (!snap?.exists()) return
+      const prefs = snap.data()
+      setContacts(prefs.contacts || [])
+      setState((s) => ({
+        ...s,
+        od:            s.od            || prefs.jmeno              || '',
+        komu:          s.komu          || prefs.jmeno_partnera     || '',
+        osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
+      }))
+      if (prefs.aktivity?.length) {
+        setPlannerActs(prefs.aktivity.filter((a) => a.active !== false))
+      } else if (prefs.vlastni_aktivity?.length || prefs.oblibene_aktivity?.length) {
+        const oblibene = prefs.oblibene_aktivity || []
+        const all = [
+          ...ACTIVITIES,
+          ...(prefs.vlastni_aktivity || []).map((a) => ({ ...a, id: a.id || a.label })),
+        ]
+        setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
+      }
     })
-  }, [])
-
-  // Load prefs — re-runs whenever the signed-in uid changes
-  useEffect(() => {
-    if (editDoc || !currentUser) return
-    let live = true
-    getDocFromServer(doc(db, 'users', currentUser.uid))
-      .then((snap) => {
-        if (!live || !snap.exists()) return
-        const prefs = snap.data()
-        setContacts(prefs.contacts || [])
-        setState((s) => ({
-          ...s,
-          od:            s.od            || prefs.jmeno              || '',
-          komu:          s.komu          || prefs.jmeno_partnera     || '',
-          osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
-        }))
-        if (prefs.aktivity?.length) {
-          setPlannerActs(prefs.aktivity.filter((a) => a.active !== false))
-        } else if (prefs.vlastni_aktivity?.length || prefs.oblibene_aktivity?.length) {
-          // migrate from old format
-          const oblibene = prefs.oblibene_aktivity || []
-          const all = [
-            ...ACTIVITIES,
-            ...(prefs.vlastni_aktivity || []).map((a) => ({ ...a, id: a.id || a.label })),
-          ]
-          setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
-        }
-      })
-      .catch((e) => console.error('Prefs load failed:', e.code || e.message))
-    return () => { live = false }
-  }, [currentUser?.uid, editDoc])
-
-  const [contacts, setContacts] = useState([])
+  }, [editDoc])
   const [plannerActs, setPlannerActs] = useState(null)
   const [success, setSuccess] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
