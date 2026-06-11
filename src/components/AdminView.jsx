@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth'
-import { doc, getDoc, getDocFromServer, setDoc, deleteDoc, updateDoc, deleteField, addDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, addDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useAuth } from '../hooks/useAuth'
 import { ACTIVITIES } from '../constants'
@@ -98,7 +98,7 @@ function PrefsPanel({ uid }) {
   const [saveError, setSaveError] = useState(null)
 
   useEffect(() => {
-    getDocFromServer(doc(db, 'users', uid)).then((snap) => {
+    getDoc(doc(db, 'users', uid)).then((snap) => {
       const seed = ACTIVITIES.map((a) => ({ ...a, active: true }))
       if (snap.exists()) {
         const d = snap.data()
@@ -317,7 +317,7 @@ function FriendsPanel({ user }) {
   useEffect(() => {
     setPanelLoading(true)
     Promise.all([
-      getDocFromServer(doc(db, 'users', user.uid)),
+      getDoc(doc(db, 'users', user.uid)),
       getDocs(query(collection(db, 'friend_requests'), where('to_uid', '==', user.uid))),
       getDocs(query(collection(db, 'friend_requests'), where('from_uid', '==', user.uid))),
     ]).then(async ([userSnap, receivedSnap, sentSnap]) => {

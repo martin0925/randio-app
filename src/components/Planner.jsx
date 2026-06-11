@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, addDoc, updateDoc, serverTimestamp, doc, getDocFromServer } from 'firebase/firestore'
+import { collection, addDoc, updateDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import { db, auth } from '../firebase'
 import { ACTIVITIES, TIMES, DAYS, MONTHS_GEN, MONTHS } from '../constants'
@@ -60,7 +60,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
       currentUserRef.current = user
       setCurrentUser(user)
       if (editDoc || !user) return
-      const snap = await getDocFromServer(doc(db, 'users', user.uid)).catch(() => null)
+      const snap = await getDoc(doc(db, 'users', user.uid)).catch(() => null)
       if (!snap?.exists()) return
       const prefs = snap.data()
       setContacts(prefs.contacts || [])
