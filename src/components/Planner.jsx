@@ -246,7 +246,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           </a>
         </div>
       )}
-      <h1 className="title">{title}</h1>
+      <h1 className="title"><span className="title-text">{title}</span></h1>
       <p className="sub">{subtitle}</p>
 
       {/* Calendar */}

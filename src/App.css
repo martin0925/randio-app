@@ -20,6 +20,10 @@ h1.title {
   font-size: 2.6rem; font-weight: 600;
   text-align: center; margin: 0;
   letter-spacing: -.02em; line-height: 1.1;
+  isolation: isolate;
+  color: #c2185b;
+}
+h1.title .title-text {
   background: linear-gradient(135deg, #9e1a45 0%, #d8366c 45%, #c2185b 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;

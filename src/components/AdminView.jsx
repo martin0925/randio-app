@@ -53,7 +53,7 @@ function LoginScreen() {
   return (
     <div className="admin-login">
       <div className="admin-login-icon">💗</div>
-      <h1 className="title">Admin</h1>
+      <h1 className="title"><span className="title-text">Admin</span></h1>
       <p className="sub">Přihlas se a spravuj svá randíčka</p>
       <button className="google-btn" onClick={handleSignIn}>
         <GoogleIcon />

@@ -43,7 +43,7 @@ export default function EnvelopeView({ onOpen }) {
 
   return (
     <div id="envelopeView">
-      <h1 className="title" style={{ marginBottom: '8px' }}>Máš poštu 💌</h1>
+      <h1 className="title" style={{ marginBottom: '8px' }}><span className="title-text">Máš poštu</span> 💌</h1>
       <p className="sub">Někdo ti poslal pozvánku na rande</p>
 
       <div
