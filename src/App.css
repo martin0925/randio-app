@@ -616,8 +616,36 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
 }
 .success-new-btn:hover { background: rgba(255,230,239,.8); transform: translateY(-1px); }
 
+.planner-loader {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 60vh; gap: 8px;
+  animation: loader-fadein .35s ease;
+}
+.loader-heart-wrap {
+  width: 72px; height: 72px;
+  display: flex; align-items: center; justify-content: center;
+  animation: loader-beat 1.3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 18px rgba(194,24,91,.45));
+}
+.loader-heart-svg { width: 60px; height: 60px; }
+
+@keyframes loader-beat {
+  0%, 100% { transform: scale(1); }
+  14%       { transform: scale(1.28); }
+  28%       { transform: scale(1.04); }
+  42%       { transform: scale(1.18); }
+  70%       { transform: scale(1); }
+}
+@keyframes loader-fadein {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .heart { display: none; }
   .day.sel, .act.sel { transform: none; }
   .cta::before { display: none; }
+  .loader-heart-wrap { animation: none; }
+  .planner-loader { animation: none; }
 }

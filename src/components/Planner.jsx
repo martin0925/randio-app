@@ -54,32 +54,35 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   const [currentUser, setCurrentUser] = useState(auth.currentUser)
   const currentUserRef = useRef(auth.currentUser)
   const [contacts, setContacts] = useState([])
+  const [prefsLoading, setPrefsLoading] = useState(!editDoc)
 
   useEffect(() => {
     return onAuthStateChanged(auth, async (user) => {
       currentUserRef.current = user
       setCurrentUser(user)
-      if (editDoc || !user) return
+      if (editDoc || !user) { setPrefsLoading(false); return }
       const snap = await getDoc(doc(db, 'users', user.uid)).catch(() => null)
-      if (!snap?.exists()) return
-      const prefs = snap.data()
-      setContacts(prefs.contacts || [])
-      setState((s) => ({
-        ...s,
-        od:            s.od            || prefs.jmeno              || '',
-        komu:          s.komu          || prefs.jmeno_partnera     || '',
-        osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
-      }))
-      if (prefs.aktivity?.length) {
-        setPlannerActs(prefs.aktivity.filter((a) => a.active !== false))
-      } else if (prefs.vlastni_aktivity?.length || prefs.oblibene_aktivity?.length) {
-        const oblibene = prefs.oblibene_aktivity || []
-        const all = [
-          ...ACTIVITIES,
-          ...(prefs.vlastni_aktivity || []).map((a) => ({ ...a, id: a.id || a.label })),
-        ]
-        setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
+      if (snap?.exists()) {
+        const prefs = snap.data()
+        setContacts(prefs.contacts || [])
+        setState((s) => ({
+          ...s,
+          od:            s.od            || prefs.jmeno              || '',
+          komu:          s.komu          || prefs.jmeno_partnera     || '',
+          osloveni_komu: s.osloveni_komu || prefs.osloveni_partnera  || '',
+        }))
+        if (prefs.aktivity?.length) {
+          setPlannerActs(prefs.aktivity.filter((a) => a.active !== false))
+        } else if (prefs.vlastni_aktivity?.length || prefs.oblibene_aktivity?.length) {
+          const oblibene = prefs.oblibene_aktivity || []
+          const all = [
+            ...ACTIVITIES,
+            ...(prefs.vlastni_aktivity || []).map((a) => ({ ...a, id: a.id || a.label })),
+          ]
+          setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
+        }
       }
+      setPrefsLoading(false)
     })
   }, [editDoc])
   const [plannerActs, setPlannerActs] = useState(null)
@@ -233,6 +236,25 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
   const subtitle = editDoc
     ? 'Změň, co se ti nehodí, a odešli protinávrh 💌'
     : 'Vyber datum, čas a aktivitu — pak pošli odkaz 💌'
+
+  if (prefsLoading) return (
+    <div className="planner-loader">
+      <div className="loader-heart-wrap">
+        <svg className="loader-heart-svg" viewBox="0 0 32 29.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <defs>
+            <linearGradient id="lhg" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" stopColor="#9e1a45"/>
+              <stop offset="45%" stopColor="#d8366c"/>
+              <stop offset="100%" stopColor="#c2185b"/>
+            </linearGradient>
+          </defs>
+          <path fill="url(#lhg)" d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4
+            c0,9.4,9.5,11.9,16,21.2c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+        </svg>
+      </div>
+      <h1 className="title" style={{ marginTop: 4 }}><span className="title-text">Randio</span></h1>
+    </div>
+  )
 
   return (
     <>
