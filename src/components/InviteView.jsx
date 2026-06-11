@@ -170,17 +170,18 @@ export default function InviteView({ randeId }) {
         onSendReply={handleSendReply}
       />
 
-      <div className="row" style={{ marginTop: '12px' }}>
-        <button className="secondary" onClick={() => plan && openInCalendar(plan)}>
-          📅 Uložit do kalendáře
-        </button>
-        <button className="secondary" onClick={() => { window.location.href = baseUrl() }}>
-          ✨ Naplánovat jiné rande
-        </button>
-      </div>
-
-      <div style={{ marginTop: '12px' }}>
-        <ShareButtons url={invUrl} />
+      <div className="invite-actions">
+        <div style={{ display: 'flex', justifyContent: 'center' }}>
+          <ShareButtons url={invUrl} />
+        </div>
+        <div className="row" style={{ marginTop: '10px' }}>
+          <button className="secondary" onClick={() => plan && openInCalendar(plan)}>
+            📅 Uložit do kalendáře
+          </button>
+          <button className="secondary" onClick={() => { window.location.href = baseUrl() }}>
+            ✨ Naplánovat jiné rande
+          </button>
+        </div>
       </div>
 
       {error && <p className="error">{error}</p>}

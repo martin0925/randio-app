@@ -274,8 +274,8 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
 
 .letter-sign {
   text-align: right; margin-top: 18px;
-  font-family: 'Cormorant Garamond', serif; font-style: italic;
-  font-size: 1.05rem; color: #b06a85; font-weight: 400;
+  font-family: 'Caveat', cursive;
+  font-size: 1.35rem; color: #c2185b; font-weight: 600;
 }
 
 .letter-divider {
@@ -314,19 +314,23 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
 }
 .primary:hover { transform: translateY(-1px); box-shadow: 0 7px 22px rgba(194,24,91,.38); }
 
+/* ── INVITE ACTIONS ─────────────────────────────────────── */
+.invite-actions { margin-top: 14px; }
+
 /* ── SHARE ──────────────────────────────────────────────── */
 .share-label { font-size: .78rem; color: #b06a85; margin: 14px 0 6px; text-align: center; letter-spacing: .04em; text-transform: uppercase; }
 .share-btns { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
 
 .share-btn {
   border: 1.5px solid rgba(255,193,214,.7); background: rgba(255,247,250,.85);
-  color: #4a1e30; border-radius: 999px; padding: 9px 18px; font-family: inherit;
-  font-size: .84rem; font-weight: 600; cursor: pointer;
-  display: flex; align-items: center; gap: 6px; text-decoration: none;
+  color: #4a1e30; border-radius: 999px; padding: 10px 28px; font-family: inherit;
+  font-size: .88rem; font-weight: 600; cursor: pointer;
+  display: flex; align-items: center; gap: 7px; text-decoration: none;
   transition: background .15s, transform .15s, box-shadow .15s;
+  box-shadow: 0 2px 8px rgba(194,24,91,.08);
 }
-.share-btn:hover { background: rgba(255,230,239,.95); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(194,24,91,.12); }
-.share-btn.copied { background: rgba(215,245,221,.9); border-color: rgba(100,200,120,.4); color: #1a6b30; }
+.share-btn:hover { background: rgba(255,230,239,.95); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(194,24,91,.15); }
+.share-btn.copied { background: rgba(215,245,221,.9); border-color: rgba(100,200,120,.4); color: #1a6b30; box-shadow: 0 2px 8px rgba(46,125,50,.12); }
 
 /* ── MISC ──────────────────────────────────────────────── */
 .hearts { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 0; }

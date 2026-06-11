@@ -64,7 +64,7 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
       <p className="letter-salutation">{salutation}</p>
       <p className="letter-activity">
-        <span className="em">{emoji}</span>{label}
+        {known && <span className="em">{emoji}</span>}{label}
       </p>
 
       {multiChoice && (
