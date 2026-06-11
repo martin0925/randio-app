@@ -34,7 +34,7 @@ export default function AdminView() {
           📚 Historie
         </button>
       </div>
-      {tab === 'prefs'   && <PrefsPanel uid={user.uid} />}
+      {tab === 'prefs'   && <PrefsPanel user={user} />}
       {tab === 'friends' && <FriendsPanel user={user} />}
       {tab === 'active'  && <InviteList uid={user.uid} filter="active" />}
       {tab === 'history' && <InviteList uid={user.uid} filter="history" />}
@@ -82,7 +82,8 @@ function AdminHeader({ user }) {
   )
 }
 
-function PrefsPanel({ uid }) {
+function PrefsPanel({ user }) {
+  const uid = user.uid
   const [jmeno, setJmeno] = useState('')
   const [jmenoPartnera, setJmenoPartnera] = useState('')
   const [pohlavi, setPohlavi] = useState('')
@@ -143,6 +144,8 @@ function PrefsPanel({ uid }) {
         pohlavi, pohlavi_partnera: pohlaviPartnera,
         osloveni_partnera: osloveniPartnera,
         aktivity,
+        email: user.email || '',
+        photoURL: user.photoURL || '',
         updated: serverTimestamp(),
       }, { merge: true })
       setSaved(true)
