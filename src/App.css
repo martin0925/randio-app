@@ -274,6 +274,21 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
 .chat-send-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 5px 14px rgba(194,24,91,.32); }
 .chat-send-btn:disabled { opacity: .4; cursor: default; box-shadow: none; }
 
+.reply-edit-btn {
+  align-self: flex-start; background: none; border: none; cursor: pointer;
+  font-family: inherit; font-size: .72rem; color: #c49db0;
+  padding: 2px 4px; margin-top: 3px; border-radius: 4px;
+  transition: color .15s, background .15s;
+}
+.reply-edit-btn:hover { color: #c2185b; background: rgba(255,230,239,.7); }
+.reply-cancel-btn {
+  flex-shrink: 0; background: none; border: 1.5px solid rgba(255,193,214,.7);
+  color: #b06a85; border-radius: 999px; padding: 8px 12px;
+  font-family: inherit; font-size: .9rem; line-height: 1; cursor: pointer;
+  transition: background .15s;
+}
+.reply-cancel-btn:hover { background: rgba(255,230,239,.8); }
+
 .letter-sign {
   text-align: right; margin-top: 18px;
   font-family: 'Caveat', cursive;

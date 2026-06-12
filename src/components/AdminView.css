@@ -29,7 +29,7 @@
 .back-link:hover { background: rgba(255,230,239,.7); }
 
 /* ── ADMIN LAYOUT ────────────────────────────────────────── */
-.admin-view { padding-bottom: 36px; width: 100%; overflow-x: hidden; }
+.admin-view { padding-bottom: 36px; overflow-x: hidden; }
 
 .admin-header {
   display: flex; align-items: center; gap: 12px;

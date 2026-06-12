@@ -4,6 +4,8 @@ import { DAYS, MONTHS_GEN } from '../constants'
 
 export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, onEdit, isCreator, onSendReply }) {
   const [replyText, setReplyText] = useState('')
+  const [editingReply, setEditingReply] = useState(false)
+  const [editText, setEditText] = useState('')
 
   if (!plan) return null
 
@@ -61,6 +63,13 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
     setReplyText('')
   }
 
+  function handleEditSave() {
+    const txt = editText.trim()
+    if (!txt) return
+    onSendReply(txt)
+    setEditingReply(false)
+  }
+
   return (
     <div className={`letter-card${plan.stav === 'potvrzeno' ? ' confetti-burst' : ''}`}>
 
@@ -113,7 +122,31 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
       {plan.odpoved && (
         <div className="chat-bubble-wrap received">
           {plan.komu && <span className="chat-label">{plan.komu}</span>}
-          <div className="chat-bubble reply">{plan.odpoved}</div>
+          {editingReply ? (
+            <div className="chat-input-row" style={{ width: '100%' }}>
+              <input
+                className="input"
+                style={{ margin: 0 }}
+                type="text"
+                maxLength={200}
+                value={editText}
+                autoFocus
+                onChange={(e) => setEditText(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter') handleEditSave(); if (e.key === 'Escape') setEditingReply(false) }}
+              />
+              <button className="chat-send-btn" disabled={!editText.trim()} onClick={handleEditSave}>Uložit</button>
+              <button className="reply-cancel-btn" onClick={() => setEditingReply(false)}>×</button>
+            </div>
+          ) : (
+            <>
+              <div className="chat-bubble reply">{plan.odpoved}</div>
+              {!isCreator && plan.stav !== 'potvrzeno' && (
+                <button className="reply-edit-btn" onClick={() => { setEditText(plan.odpoved); setEditingReply(true) }}>
+                  Upravit zprávu
+                </button>
+              )}
+            </>
+          )}
         </div>
       )}
 
@@ -144,12 +177,31 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
       {plan.stav !== 'potvrzeno' && (
         <div className="row">
-          <button className="primary" disabled={confirmDisabled} onClick={onConfirm}>
-            Jdu do toho! 💗
-          </button>
-          <button className="secondary" onClick={onEdit}>
-            ✏️ Upravit podle sebe
-          </button>
+          {isCreator ? (
+            plan.stav === 'protinavrh' ? (
+              <>
+                <button className="primary" disabled={confirmDisabled} onClick={onConfirm}>
+                  Přijmout protinávrh 💗
+                </button>
+                <button className="secondary" onClick={onEdit}>
+                  ✏️ Upravit znovu
+                </button>
+              </>
+            ) : (
+              <button className="secondary" onClick={onEdit}>
+                ✏️ Upravit pozvánku
+              </button>
+            )
+          ) : (
+            <>
+              <button className="primary" disabled={confirmDisabled} onClick={onConfirm}>
+                Jdu do toho! 💗
+              </button>
+              <button className="secondary" onClick={onEdit}>
+                ✏️ Upravit podle sebe
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>
