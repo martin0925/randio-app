@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, addDoc, updateDoc, serverTimestamp, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
+import { collection, addDoc, updateDoc, serverTimestamp, doc, getDoc, getDocs, query, where, onSnapshot } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import { db, auth } from '../firebase'
 import { ACTIVITIES, TIMES, DAYS, MONTHS_GEN, MONTHS } from '../constants'
@@ -82,14 +82,21 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
         }
       }
-      getDocs(query(collection(db, 'rande'), where('uid_prijemce', '==', user.uid)))
-        .then((s) => setPendingInvites(s.docs.filter((d) => d.data().stav !== 'potvrzeno').length))
-        .catch(() => {})
       setPrefsLoading(false)
     })
   }, [editDoc])
   const [selectedContactUid, setSelectedContactUid] = useState(null)
   const [pendingInvites, setPendingInvites] = useState(0)
+  useEffect(() => {
+    if (!currentUser || editDoc) { setPendingInvites(0); return }
+    const unsub = onSnapshot(
+      query(collection(db, 'rande'), where('uid_prijemce', '==', currentUser.uid)),
+      (snap) => setPendingInvites(snap.docs.filter((d) => d.data().stav !== 'potvrzeno').length),
+      () => {}
+    )
+    return unsub
+  }, [currentUser?.uid, editDoc])
+
   const [plannerActs, setPlannerActs] = useState(null)
   const [success, setSuccess] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
