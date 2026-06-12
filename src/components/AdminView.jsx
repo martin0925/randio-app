@@ -12,6 +12,16 @@ const provider = new GoogleAuthProvider()
 export default function AdminView() {
   const { user, loading } = useAuth()
   const [tab, setTab] = useState('prefs')
+  const [receivedCount, setReceivedCount] = useState(0)
+
+  useEffect(() => {
+    if (!user) return
+    const unsub = onSnapshot(
+      query(collection(db, 'rande'), where('uid_prijemce', '==', user.uid)),
+      (snap) => setReceivedCount(snap.docs.filter((d) => d.data().stav !== 'potvrzeno').length)
+    )
+    return unsub
+  }, [user?.uid])
 
   if (loading) return (
     <div className="planner-loader">
@@ -33,7 +43,7 @@ export default function AdminView() {
           👥 Přátelé
         </button>
         <button className={`admin-tab${tab === 'active' ? ' active' : ''}`} onClick={() => setTab('active')}>
-          💌 Aktivní
+          💌 Aktivní{receivedCount > 0 && <span className="tab-badge">{receivedCount}</span>}
         </button>
         <button className={`admin-tab${tab === 'history' ? ' active' : ''}`} onClick={() => setTab('history')}>
           📚 Historie
@@ -556,7 +566,7 @@ function InviteList({ uid, filter }) {
       <div className="invite-empty">
         <span className="invite-empty-icon">💌</span>
         <p className="invite-empty-title">Žádná čekající randíčka</p>
-        <p className="invite-empty-sub">Odešli pozvánku a uvidíš ji tady, jakmile ji příjemce otevře.</p>
+        <p className="invite-empty-sub">Odešli pozvánku — nebo tě někdo může pozvat přímo sem.</p>
         <a href={baseUrl()} className="invite-empty-cta">Vytvořit pozvánku →</a>
       </div>
     ) : (

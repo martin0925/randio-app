@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { collection, addDoc, updateDoc, serverTimestamp, doc, getDoc } from 'firebase/firestore'
+import { collection, addDoc, updateDoc, serverTimestamp, doc, getDoc, getDocs, query, where } from 'firebase/firestore'
 import { onAuthStateChanged } from 'firebase/auth'
 import { db, auth } from '../firebase'
 import { ACTIVITIES, TIMES, DAYS, MONTHS_GEN, MONTHS } from '../constants'
@@ -82,9 +82,14 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           setPlannerActs(oblibene.length > 0 ? all.filter((a) => oblibene.includes(a.id)) : all)
         }
       }
+      getDocs(query(collection(db, 'rande'), where('uid_prijemce', '==', user.uid)))
+        .then((s) => setPendingInvites(s.docs.filter((d) => d.data().stav !== 'potvrzeno').length))
+        .catch(() => {})
       setPrefsLoading(false)
     })
   }, [editDoc])
+  const [selectedContactUid, setSelectedContactUid] = useState(null)
+  const [pendingInvites, setPendingInvites] = useState(0)
   const [plannerActs, setPlannerActs] = useState(null)
   const [success, setSuccess] = useState(false)
   const [successMsg, setSuccessMsg] = useState('')
@@ -125,6 +130,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
 
   function handleReset() {
     setState(initState())
+    setSelectedContactUid(null)
     setSuccess(false)
     setSuccessMsg('')
     setShareUrl(null)
@@ -195,7 +201,10 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           ...plan,
           stav: 'navrh',
           vytvoreno: serverTimestamp(),
-          ...(currentUserRef.current ? { uid: currentUserRef.current.uid } : {}),
+          ...(currentUserRef.current ? {
+            uid: currentUserRef.current.uid,
+            ...(selectedContactUid ? { uid_prijemce: selectedContactUid } : {}),
+          } : {}),
         })
         localStorage.setItem(`creator_${docRef.id}`, '1')
         const url = `${baseUrl()}?id=${docRef.id}`
@@ -266,6 +275,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
         <div className="planner-topbar">
           <h1 className="title planner-brand-title"><span className="title-text">Randio</span></h1>
           <a href={`${baseUrl()}?admin`} className="planner-user-btn" aria-label="Účet / Admin">
+            {pendingInvites > 0 && <span className="planner-user-badge">{pendingInvites}</span>}
             {currentUser?.photoURL
               ? <img src={currentUser.photoURL} alt="" className="planner-user-avatar" referrerPolicy="no-referrer" />
               : <span className="planner-user-icon">👤</span>
@@ -393,8 +403,8 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
               {contacts.map((c) => (
                 <button
                   key={c.uid}
-                  className={`contact-chip${komu === (c.jmeno || '') && c.jmeno ? ' sel' : ''}`}
-                  onClick={() => setState((s) => ({ ...s, komu: c.jmeno || '' }))}
+                  className={`contact-chip${selectedContactUid === c.uid ? ' sel' : ''}`}
+                  onClick={() => { setState((s) => ({ ...s, komu: c.jmeno || '' })); setSelectedContactUid(c.uid) }}
                 >
                   {c.photoURL
                     ? <img src={c.photoURL} className="contact-chip-avatar" alt="" referrerPolicy="no-referrer" />
@@ -403,6 +413,9 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
                 </button>
               ))}
             </div>
+            {selectedContactUid && (
+              <p className="contact-direct-hint">📲 Pozvánka bude doručena přímo do jejich appky</p>
+            )}
           </div>
         )}
         <div className="who-grid">
@@ -425,7 +438,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
               type="text"
               placeholder="Jméno příjemce"
               value={komu}
-              onChange={(e) => setState((s) => ({ ...s, komu: e.target.value }))}
+              onChange={(e) => { setState((s) => ({ ...s, komu: e.target.value })); setSelectedContactUid(null) }}
             />
           </div>
         </div>
