@@ -1,0 +1,14 @@
+{
+  "name": "Randio",
+  "short_name": "Randio",
+  "description": "Pošli romantickou pozvánku na rande",
+  "start_url": "/randio-app/",
+  "scope": "/randio-app/",
+  "display": "standalone",
+  "background_color": "#fff8fa",
+  "theme_color": "#c2185b",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

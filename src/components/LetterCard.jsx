@@ -39,7 +39,7 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
   const compact = activeDatum ? countdownCompact(activeDatum) : null
   const showCountdown = compact && (!multiChoice || selectedOpt)
 
-  const datumToShow = multiChoice ? null : plan.datum
+  const datumToShow = multiChoice ? selectedOpt : plan.datum
   const metaRows = []
   if (datumToShow) metaRows.push({ icon: '📅', text: fmtDate(parseDate(datumToShow)), link: null })
   metaRows.push({ icon: '🕐', text: plan.cas, link: null })

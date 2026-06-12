@@ -329,7 +329,7 @@ function FriendsPanel({ user }) {
     Promise.all([
       getDoc(doc(db, 'users', user.uid)),
       getDocs(query(collection(db, 'friend_requests'), where('to_uid', '==', user.uid))),
-      getDocs(query(collection(db, 'friend_requests'), where('from_uid', '==', user.uid))),
+      getDocs(query(collection(db, 'friend_requests'), where('from_uid', '==', user.uid), where('status', '==', 'accepted'))),
     ]).then(async ([userSnap, receivedSnap, sentSnap]) => {
       const existingContacts = userSnap.data()?.contacts || []
 
@@ -340,7 +340,7 @@ function FriendsPanel({ user }) {
       // Auto-sync accepted sent requests into own contacts
       const acceptedSent = sentSnap.docs
         .map((d) => d.data())
-        .filter((r) => r.status === 'accepted' && !existingContacts.some((c) => c.uid === r.to_uid))
+        .filter((r) => !existingContacts.some((c) => c.uid === r.to_uid))
 
       if (acceptedSent.length > 0) {
         const merged = [
