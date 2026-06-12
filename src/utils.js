@@ -8,6 +8,7 @@ export function countdownCompact(datumStr) {
   if (diff < 0) return null
   if (diff === 0) return 'Dnes 🎉'
   if (diff === 1) return 'Zítra 💗'
+  if (diff <= 4) return `za ${diff} dny`
   return `za ${diff} dní`
 }
 
@@ -66,10 +67,11 @@ export function downloadIcs(plan) {
     'END:VCALENDAR',
   ].join('\r\n')
   const a = document.createElement('a')
-  a.href = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
+  const url = URL.createObjectURL(new Blob([ics], { type: 'text/calendar' }))
+  a.href = url
   a.download = 'rande.ics'
   a.click()
-  URL.revokeObjectURL(a.href)
+  setTimeout(() => URL.revokeObjectURL(url), 1000)
 }
 
 export function openInCalendar(plan) {

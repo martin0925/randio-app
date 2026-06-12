@@ -235,6 +235,7 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
 .chat-bubble-wrap {
   display: flex; flex-direction: column; align-items: flex-end; margin: 14px 0 0;
 }
+.chat-bubble-wrap.received { align-items: flex-start; }
 
 .chat-label {
   font-size: .68rem; color: #c49db0; margin-bottom: 4px;
@@ -255,6 +256,7 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
   background: rgba(255,240,245,.9); color: #7a2040;
   border: 1px solid rgba(255,193,214,.7);
   box-shadow: 0 2px 8px rgba(194,24,91,.07);
+  border-radius: 18px 18px 18px 4px;
 }
 
 .chat-input-row {

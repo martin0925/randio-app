@@ -162,11 +162,15 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
     setSubmitting(true)
     setError(null)
     const sorted = chosenDates()
+    const customActEmoji = (!act && customAct.trim())
+      ? (plannerActs ?? ACTIVITIES).find((a) => [a.emoji, a.label].filter(Boolean).join(' ') === customAct.trim())?.emoji || ''
+      : ''
     const plan = {
       datum: fmtD(sorted[0]),
       datumOptions: sorted.map(fmtD),
       cas: chosenTime(),
       aktivita: chosenAct(),
+      aktivita_emoji: customActEmoji,
       od: od.trim(),
       komu: komu.trim(),
       osloveni_komu: osloveni_komu.trim(),

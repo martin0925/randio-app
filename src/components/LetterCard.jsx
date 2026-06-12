@@ -8,8 +8,12 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
   if (!plan) return null
 
   const known = findAct(plan.aktivita)
-  const label = known ? known.label : plan.aktivita
-  const emoji = known ? known.emoji : '💞'
+  let label = known ? known.label : plan.aktivita
+  let displayEmoji = known ? known.emoji : null
+  if (!known && plan.aktivita_emoji) {
+    displayEmoji = plan.aktivita_emoji
+    label = plan.aktivita.replace(plan.aktivita_emoji, '').trim()
+  }
 
   const datumOptions = plan.datumOptions || [plan.datum]
   const multiChoice = datumOptions.length > 1 && plan.stav !== 'potvrzeno'
@@ -64,7 +68,7 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
       <p className="letter-salutation">{salutation}</p>
       <p className="letter-activity">
-        {known && <span className="em">{emoji}</span>}{label}
+        {displayEmoji && <span className="em">{displayEmoji}</span>}{label}
       </p>
 
       {multiChoice && (
@@ -107,7 +111,7 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
       )}
 
       {plan.odpoved && (
-        <div className="chat-bubble-wrap sent">
+        <div className="chat-bubble-wrap received">
           {plan.komu && <span className="chat-label">{plan.komu}</span>}
           <div className="chat-bubble reply">{plan.odpoved}</div>
         </div>
