@@ -2,35 +2,64 @@
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0%" stop-color="#fff0f5"/>
-      <stop offset="55%" stop-color="#ffe1ec"/>
+      <stop offset="50%" stop-color="#fce4ec"/>
       <stop offset="100%" stop-color="#ffd3e3"/>
+    </linearGradient>
+    <linearGradient id="hg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9e1a45"/>
+      <stop offset="50%" stop-color="#d8366c"/>
+      <stop offset="100%" stop-color="#c2185b"/>
     </linearGradient>
     <linearGradient id="env" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0%" stop-color="#ffc3d8"/>
-      <stop offset="100%" stop-color="#ffaac8"/>
+      <stop offset="100%" stop-color="#f48fb1"/>
     </linearGradient>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="8" stdDeviation="18" flood-color="#c2185b" flood-opacity=".18"/>
+    </filter>
   </defs>
+
   <rect width="1200" height="630" fill="url(#bg)"/>
 
+  <!-- subtle dot pattern -->
+  <circle cx="80"  cy="80"  r="4" fill="#e2477d" opacity=".12"/>
+  <circle cx="240" cy="48"  r="3" fill="#c2185b" opacity=".1"/>
+  <circle cx="1100" cy="90" r="5" fill="#e2477d" opacity=".1"/>
+  <circle cx="1150" cy="200" r="3" fill="#c2185b" opacity=".12"/>
+  <circle cx="60"  cy="540" r="4" fill="#c2185b" opacity=".1"/>
+  <circle cx="200" cy="580" r="3" fill="#e2477d" opacity=".1"/>
+  <circle cx="1050" cy="540" r="5" fill="#c2185b" opacity=".1"/>
+  <circle cx="1160" cy="490" r="3" fill="#e2477d" opacity=".12"/>
+
   <!-- decorative hearts -->
-  <text x="120" y="140" font-size="48" opacity=".25">💗</text>
-  <text x="1020" y="520" font-size="56" opacity=".2">🌸</text>
-  <text x="80" y="500" font-size="36" opacity=".18">💗</text>
-  <text x="1060" y="120" font-size="40" opacity=".22">💗</text>
+  <text x="90"  y="160" font-size="52" opacity=".18">💗</text>
+  <text x="1040" y="530" font-size="60" opacity=".15">🌸</text>
+  <text x="60"  y="510" font-size="38" opacity=".14">💗</text>
+  <text x="1080" y="130" font-size="42" opacity=".16">💗</text>
+  <text x="970" y="300" font-size="30" opacity=".12">✨</text>
+  <text x="140" y="370" font-size="28" opacity=".11">🌸</text>
 
-  <!-- envelope body -->
-  <rect x="420" y="190" width="360" height="240" rx="6" fill="white" stroke="#ffc3d8" stroke-width="3"/>
-  <!-- envelope V-folds -->
-  <polygon points="420,190 600,310 780,190" fill="#ffd3e3" opacity=".6"/>
-  <polygon points="420,190 420,430 550,310" fill="#ffc3d8" opacity=".5"/>
-  <polygon points="780,190 780,430 650,310" fill="#ffc3d8" opacity=".5"/>
-  <!-- flap -->
-  <polygon points="420,190 600,310 780,190 780,185 420,185" fill="url(#env)" opacity=".9"/>
-  <!-- seal -->
-  <circle cx="600" cy="310" r="26" fill="#e2477d"/>
-  <text x="600" y="320" font-size="24" text-anchor="middle" fill="white">💗</text>
+  <!-- envelope with shadow -->
+  <g filter="url(#shadow)">
+    <rect x="400" y="155" width="400" height="268" rx="10" fill="white" stroke="#f8bbd0" stroke-width="2.5"/>
+    <polygon points="400,155 600,285 800,155" fill="#fce4ec" opacity=".85"/>
+    <polygon points="400,155 400,423 542,295" fill="#f8bbd0" opacity=".6"/>
+    <polygon points="800,155 800,423 658,295" fill="#f8bbd0" opacity=".6"/>
+    <polygon points="400,423 600,293 800,423" fill="#fce4ec" opacity=".7"/>
+    <!-- flap -->
+    <polygon points="400,155 600,285 800,155 800,148 400,148" fill="url(#env)"/>
+    <!-- seal heart -->
+    <circle cx="600" cy="289" r="30" fill="#c2185b" opacity=".95"/>
+    <path transform="translate(585,276) scale(0.94)" fill="white" d="M13.6,0c-2,0-3.6,1.56-4.4,3.22C8.4,1.56,6.8,0,4.84,0C2.2,0,0,2.18,0,4.84c0,5.4,5.48,6.86,9.2,12.2C12.7,11.66,18.4,9.98,18.4,4.84C18.4,2.18,16.2,0,13.6,0z"/>
+  </g>
 
-  <!-- title -->
-  <text x="600" y="510" font-family="Georgia, serif" font-size="58" font-weight="600" text-anchor="middle" fill="#a8244e">Pozvánka na rande</text>
-  <text x="600" y="560" font-family="Arial, sans-serif" font-size="28" text-anchor="middle" fill="#b06a85">Otevři svůj dopis 💌</text>
+  <!-- Randio brand -->
+  <text x="600" y="490" font-family="Georgia, 'Times New Roman', serif" font-size="72" font-weight="700" text-anchor="middle" fill="url(#hg)">Randio</text>
+
+  <!-- tagline -->
+  <text x="600" y="538" font-family="Arial, Helvetica, sans-serif" font-size="26" text-anchor="middle" fill="#b06a85" letter-spacing="1">Romantická pozvánka na rande</text>
+
+  <!-- bottom line -->
+  <rect x="460" y="562" width="280" height="2" rx="1" fill="#e8b4c8" opacity=".6"/>
+  <text x="600" y="595" font-family="Arial, Helvetica, sans-serif" font-size="20" text-anchor="middle" fill="#c9a0b4">Otevři svůj dopis a zjisti, kdo tě zve 💌</text>
 </svg>

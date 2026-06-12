@@ -210,6 +210,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           vytvoreno: serverTimestamp(),
           ...(currentUserRef.current ? {
             uid: currentUserRef.current.uid,
+            od_photoURL: currentUserRef.current.photoURL || '',
             ...(selectedContactUid ? { uid_prijemce: selectedContactUid } : {}),
           } : {}),
         })

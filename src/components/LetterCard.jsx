@@ -172,7 +172,14 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '8px' }}>
         <span className={badgeClass}>{badgeText}</span>
-        {plan.od && <p className="letter-sign" style={{ margin: 0 }}>— {plan.od}</p>}
+        {plan.od && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {plan.od_photoURL && (
+              <img src={plan.od_photoURL} alt={plan.od} className="letter-sender-photo" referrerPolicy="no-referrer" />
+            )}
+            <p className="letter-sign" style={{ margin: 0 }}>— {plan.od}</p>
+          </div>
+        )}
       </div>
 
       {plan.stav !== 'potvrzeno' && (

@@ -289,6 +289,13 @@ textarea.input { resize: vertical; min-height: 76px; margin-top: 10px; line-heig
 }
 .reply-cancel-btn:hover { background: rgba(255,230,239,.8); }
 
+.letter-sender-photo {
+  width: 36px; height: 36px; border-radius: 50%;
+  border: 2px solid rgba(255,193,214,.75);
+  box-shadow: 0 2px 8px rgba(194,24,91,.15);
+  object-fit: cover; flex-shrink: 0;
+}
+
 .letter-sign {
   text-align: right; margin-top: 18px;
   font-family: 'Caveat', cursive;
