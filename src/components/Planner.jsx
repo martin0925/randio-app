@@ -260,6 +260,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
     <>
       {!editDoc && (
         <div className="planner-topbar">
+          <h1 className="title planner-brand-title"><span className="title-text">Randio</span></h1>
           <a href={`${baseUrl()}?admin`} className="planner-user-btn" aria-label="Účet / Admin">
             {currentUser?.photoURL
               ? <img src={currentUser.photoURL} alt="" className="planner-user-avatar" referrerPolicy="no-referrer" />
@@ -268,7 +269,7 @@ export default function Planner({ editDoc = null, prefill = null, onEditDone = n
           </a>
         </div>
       )}
-      <h1 className="title"><span className="title-text">{title}</span></h1>
+      <h2 className="title title--sub"><span className="title-text">{title}</span></h2>
       <p className="sub">{subtitle}</p>
 
       {/* Calendar */}

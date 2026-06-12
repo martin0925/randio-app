@@ -15,7 +15,7 @@ body {
 
 .card { max-width: 480px; position: relative; z-index: 1; isolation: isolate; }
 
-h1.title {
+h1.title, h2.title {
   font-family: 'Cormorant Garamond', serif;
   font-size: 2.6rem; font-weight: 600;
   text-align: center; margin: 0;
@@ -23,7 +23,7 @@ h1.title {
   isolation: isolate;
   color: #c2185b;
 }
-h1.title .title-text {
+h1.title .title-text, h2.title .title-text {
   background: linear-gradient(135deg, #9e1a45 0%, #d8366c 45%, #c2185b 100%);
   -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -438,7 +438,9 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
 }
 
 /* ── PLANNER TOPBAR ─────────────────────────────────────── */
-.planner-topbar { display: flex; justify-content: flex-end; margin-bottom: 6px; }
+.planner-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px; }
+.planner-brand-title { font-size: 2rem !important; margin: 0 !important; }
+.title--sub { font-size: 1.55rem !important; margin: 18px 0 0 !important; }
 
 .planner-user-btn {
   display: flex; align-items: center; justify-content: center;
