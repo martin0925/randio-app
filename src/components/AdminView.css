@@ -425,6 +425,29 @@
   box-shadow: 0 2px 8px rgba(194,24,91,.25);
 }
 .friend-add-btn:hover { opacity: .85; }
+.friend-name { display: flex; align-items: center; gap: 4px; }
+.friend-name-edit-btn {
+  background: none; border: none; cursor: pointer;
+  color: #c9a0b4; font-size: .85rem; padding: 0 2px;
+  line-height: 1; transition: color .15s;
+  flex-shrink: 0;
+}
+.friend-name-edit-btn:hover { color: #c2185b; }
+
+.friend-name-edit-row { display: flex; align-items: center; gap: 4px; width: 100%; }
+.friend-name-input { margin: 0 !important; padding: 5px 9px !important; font-size: .84rem !important; height: auto !important; }
+.friend-name-save-btn, .friend-name-cancel-btn {
+  flex-shrink: 0; background: none; border: 1.5px solid rgba(255,193,214,.7);
+  border-radius: 8px; cursor: pointer; font-size: .85rem;
+  width: 26px; height: 26px; display: flex; align-items: center; justify-content: center;
+  transition: background .15s, color .15s;
+}
+.friend-name-save-btn { color: #2e7d32; }
+.friend-name-save-btn:hover:not(:disabled) { background: rgba(200,240,210,.8); }
+.friend-name-save-btn:disabled { opacity: .4; cursor: default; }
+.friend-name-cancel-btn { color: #b06a85; }
+.friend-name-cancel-btn:hover { background: rgba(255,230,239,.8); }
+
 .friend-remove-btn {
   flex-shrink: 0; background: none; border: none; cursor: pointer;
   color: #c9a0b4; font-size: 1.1rem; line-height: 1;

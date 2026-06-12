@@ -329,6 +329,7 @@ function FriendsPanel({ user }) {
   const [contacts, setContacts] = useState([])
   const [pending, setPending] = useState([])
   const [panelLoading, setPanelLoading] = useState(true)
+  const [editingContact, setEditingContact] = useState(null) // { uid, name }
 
   const [searchEmail, setSearchEmail] = useState('')
   const [searching, setSearching] = useState(false)
@@ -436,6 +437,15 @@ function FriendsPanel({ user }) {
     refresh()
   }
 
+  async function saveContactName(uid, newName) {
+    const trimmed = newName.trim()
+    if (!trimmed) return
+    const updated = contacts.map((c) => c.uid === uid ? { ...c, jmeno: trimmed } : c)
+    await updateDoc(doc(db, 'users', user.uid), { contacts: updated }).catch(() => {})
+    setContacts(updated)
+    setEditingContact(null)
+  }
+
   if (panelLoading) return <MiniLoader />
 
   return (
@@ -509,7 +519,27 @@ function FriendsPanel({ user }) {
                     ? <img src={c.photoURL} className="friend-avatar" alt="" referrerPolicy="no-referrer" />
                     : <span className="friend-avatar-ph">👤</span>}
                   <div className="friend-info">
-                    <span className="friend-name">{c.jmeno || c.email}</span>
+                    {editingContact?.uid === c.uid ? (
+                      <div className="friend-name-edit-row">
+                        <input
+                          className="input friend-name-input"
+                          value={editingContact.name}
+                          autoFocus
+                          onChange={(e) => setEditingContact((ec) => ({ ...ec, name: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') saveContactName(c.uid, editingContact.name)
+                            if (e.key === 'Escape') setEditingContact(null)
+                          }}
+                        />
+                        <button className="friend-name-save-btn" onClick={() => saveContactName(c.uid, editingContact.name)} disabled={!editingContact.name.trim()}>✓</button>
+                        <button className="friend-name-cancel-btn" onClick={() => setEditingContact(null)}>✗</button>
+                      </div>
+                    ) : (
+                      <span className="friend-name">
+                        {c.jmeno || c.email}
+                        <button className="friend-name-edit-btn" onClick={() => setEditingContact({ uid: c.uid, name: c.jmeno || '' })} aria-label="Přejmenovat">✎</button>
+                      </span>
+                    )}
                     <span className="friend-email">{c.email}</span>
                   </div>
                   <button className="friend-remove-btn" onClick={() => removeContact(c)} aria-label="Odebrat">×</button>
