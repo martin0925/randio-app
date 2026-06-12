@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { signInWithPopup, GoogleAuthProvider, signOut } from 'firebase/auth'
-import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, addDoc, serverTimestamp, collection, query, where, getDocs } from 'firebase/firestore'
+import { doc, getDoc, setDoc, deleteDoc, updateDoc, deleteField, addDoc, serverTimestamp, collection, query, where, getDocs, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '../firebase'
 import { useAuth } from '../hooks/useAuth'
 import { ACTIVITIES } from '../constants'
@@ -518,20 +518,31 @@ function InviteList({ uid, filter }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      getDocs(query(collection(db, 'rande'), where('uid', '==', uid))),
-      getDocs(query(collection(db, 'rande'), where('uid_prijemce', '==', uid))),
-    ]).then(([sentSnap, receivedSnap]) => {
-      const sent = sentSnap.docs.map((d) => ({ id: d.id, ...d.data(), _role: 'sent' }))
+    const sentMap = new Map()
+    const receivedMap = new Map()
+    let sentReady = false, receivedReady = false
+
+    function merge() {
+      const sent = [...sentMap.values()].map((d) => ({ ...d, _role: 'sent' }))
       const sentIds = new Set(sent.map((d) => d.id))
-      const received = receivedSnap.docs
+      const received = [...receivedMap.values()]
         .filter((d) => !sentIds.has(d.id))
-        .map((d) => ({ id: d.id, ...d.data(), _role: 'received' }))
+        .map((d) => ({ ...d, _role: 'received' }))
       const all = [...sent, ...received]
       all.sort((a, b) => (b.vytvoreno?.seconds || 0) - (a.vytvoreno?.seconds || 0))
       setInvites(all)
-      setLoading(false)
-    })
+      if (sentReady && receivedReady) setLoading(false)
+    }
+
+    const unsub1 = onSnapshot(
+      query(collection(db, 'rande'), where('uid', '==', uid)),
+      (snap) => { sentMap.clear(); snap.docs.forEach((d) => sentMap.set(d.id, { id: d.id, ...d.data() })); sentReady = true; merge() }
+    )
+    const unsub2 = onSnapshot(
+      query(collection(db, 'rande'), where('uid_prijemce', '==', uid)),
+      (snap) => { receivedMap.clear(); snap.docs.forEach((d) => receivedMap.set(d.id, { id: d.id, ...d.data() })); receivedReady = true; merge() }
+    )
+    return () => { unsub1(); unsub2() }
   }, [uid])
 
   if (loading) return <MiniLoader />

@@ -29,8 +29,8 @@ export default function LetterCard({ plan, selectedOpt, onSelectOpt, onConfirm, 
       : `${plan.osloveni_komu},`
   } else if (plan.komu) {
     salutation = plan.od
-      ? `Milá/ý ${plan.komu}, ${plan.od} tě zve na rande!`
-      : `Milá/ý ${plan.komu},`
+      ? `${plan.komu}, ${plan.od} tě zve na rande!`
+      : `${plan.komu},`
   } else {
     salutation = plan.od ? `${plan.od} tě zve na rande!` : 'Máš pozvánku na rande!'
   }

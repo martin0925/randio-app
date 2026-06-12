@@ -117,7 +117,11 @@ export default function InviteView({ randeId }) {
     catch (err) { setError('Odpověď se nepodařilo uložit: ' + err.message) }
   }
 
-  if (loading) return <p className="sub" style={{ marginTop: '40vh' }}>Načítám… 💗</p>
+  if (loading) return (
+    <div className="planner-loader">
+      <div className="loader-heart-wrap"><LoaderHeart /></div>
+    </div>
+  )
 
   if (notFound) {
     return (
@@ -186,5 +190,21 @@ export default function InviteView({ randeId }) {
 
       {error && <p className="error">{error}</p>}
     </>
+  )
+}
+
+function LoaderHeart() {
+  return (
+    <svg className="loader-heart-svg" viewBox="0 0 32 29.6" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+      <defs>
+        <linearGradient id="ivhg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#9e1a45"/>
+          <stop offset="45%" stopColor="#d8366c"/>
+          <stop offset="100%" stopColor="#c2185b"/>
+        </linearGradient>
+      </defs>
+      <path fill="url(#ivhg)" d="M23.6,0c-3.4,0-6.3,2.7-7.6,5.6C14.7,2.7,11.8,0,8.4,0C3.8,0,0,3.8,0,8.4
+        c0,9.4,9.5,11.9,16,21.2c6.1-9.3,16-12.1,16-21.2C32,3.8,28.2,0,23.6,0z"/>
+    </svg>
   )
 }
