@@ -39,10 +39,12 @@ export default function AdminView() {
           📚 Historie
         </button>
       </div>
-      {tab === 'prefs'   && <PrefsPanel user={user} />}
-      {tab === 'friends' && <FriendsPanel user={user} />}
-      {tab === 'active'  && <InviteList uid={user.uid} filter="active" />}
-      {tab === 'history' && <InviteList uid={user.uid} filter="history" />}
+      <div className="tab-panel" key={tab}>
+        {tab === 'prefs'   && <PrefsPanel user={user} />}
+        {tab === 'friends' && <FriendsPanel user={user} />}
+        {tab === 'active'  && <InviteList uid={user.uid} filter="active" />}
+        {tab === 'history' && <InviteList uid={user.uid} filter="history" />}
+      </div>
     </div>
   )
 }

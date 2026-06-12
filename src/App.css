@@ -652,4 +652,5 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
   .cta::before { display: none; }
   .loader-heart-wrap { animation: none; }
   .planner-loader { animation: none; }
+  .tab-panel { animation: none; }
 }
