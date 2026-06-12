@@ -552,6 +552,27 @@ button:focus-visible, .input:focus-visible { outline: 2.5px solid #c2185b; outli
 }
 .contact-chip-ph { font-size: .9rem; line-height: 1; }
 
+/* ── STICKY NOTIFICATION ─────────────────────────────────── */
+.sticky-notif {
+  display: flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #fce4ec 0%, #f8bbd9 100%);
+  border: 1.5px solid #f48fb1;
+  border-radius: 16px; padding: 12px 14px;
+  margin-bottom: 10px;
+  box-shadow: 0 4px 18px rgba(194,24,91,.14), inset 0 1px 0 rgba(255,255,255,.7);
+  animation: toastIn .28s cubic-bezier(.34,1.56,.64,1);
+}
+.sticky-notif-msg {
+  flex: 1; font-size: .88rem; font-weight: 700; color: #880e4f; line-height: 1.4;
+}
+.sticky-notif-close {
+  flex-shrink: 0; background: #c2185b; color: #fff;
+  border: none; border-radius: 999px; padding: 6px 13px;
+  font-family: inherit; font-size: .78rem; font-weight: 700; cursor: pointer;
+  white-space: nowrap; transition: background .15s, transform .12s;
+}
+.sticky-notif-close:hover { background: #a01648; transform: scale(1.04); }
+
 /* ── IN-APP TOAST ────────────────────────────────────────── */
 .in-app-toast {
   display: flex; align-items: center; gap: 10px;

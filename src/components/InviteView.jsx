@@ -21,6 +21,15 @@ function InAppToast({ msg, onClose }) {
   )
 }
 
+function StickyNotif({ msg, onDismiss }) {
+  return (
+    <div className="sticky-notif" role="alert">
+      <span className="sticky-notif-msg">{msg}</span>
+      <button className="sticky-notif-close" onClick={onDismiss}>Zobrazeno ✓</button>
+    </div>
+  )
+}
+
 const CONFETTI_COLORS = ['#e2477d', '#c2185b', '#ff8fb1', '#fff', '#ffc0cb', '#ff4d94']
 
 function fireConfetti() {
@@ -33,6 +42,25 @@ function fireConfetti() {
   burst(0.7, 380)
 }
 
+function buildNotifMsg(prev, curr, plan, isCreator) {
+  let msg = null
+  if (prev.stav !== curr.stav) {
+    if (curr.stav === 'potvrzeno' && isCreator)
+      msg = `🎉 ${plan.komu || 'Příjemce'} přijal/a pozvánku!`
+    else if (curr.stav === 'potvrzeno' && !isCreator)
+      msg = `🎉 Rande je potvrzeno!`
+    else if (curr.stav === 'protinavrh' && isCreator)
+      msg = `💌 ${plan.komu || 'Příjemce'} upravil/a pozvánku`
+    else if (curr.stav === 'protinavrh' && !isCreator)
+      msg = `💌 ${plan.od || 'Tvůj partner'} upravil/a pozvánku`
+  }
+  if (!prev.odpoved && curr.odpoved && isCreator) {
+    const preview = curr.odpoved.length > 50 ? curr.odpoved.slice(0, 50) + '…' : curr.odpoved
+    msg = `💬 ${plan.komu || 'Příjemce'}: „${preview}"`
+  }
+  return msg
+}
+
 export default function InviteView({ randeId }) {
   const [plan, setPlan] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -42,8 +70,11 @@ export default function InviteView({ randeId }) {
   const [editing, setEditing] = useState(false)
   const [notFound, setNotFound] = useState(false)
   const [toast, setToast] = useState(null)
+  const [stickyMsg, setStickyMsg] = useState(null)
+
   const prevStav = useRef(null)
   const prevPlan = useRef(null)
+  const firstLoadDone = useRef(false)
 
   const isCreator = localStorage.getItem(`creator_${randeId}`) === '1'
   const profileLinked = useRef(false)
@@ -67,28 +98,50 @@ export default function InviteView({ randeId }) {
     if (!plan) return
     const seenKey = `seen_${randeId}`
     const curr = { stav: plan.stav, odpoved: plan.odpoved || null }
-    const prev = prevPlan.current ?? JSON.parse(localStorage.getItem(seenKey) || 'null')
 
-    if (prev) {
-      let msg = null
-      if (prev.stav !== curr.stav) {
-        if (curr.stav === 'potvrzeno' && isCreator)
-          msg = `🎉 ${plan.komu || 'Příjemce'} přijal/a pozvánku!`
-        else if (curr.stav === 'protinavrh' && isCreator)
-          msg = `💌 ${plan.komu || 'Příjemce'} upravil/a pozvánku`
-        else if (curr.stav === 'protinavrh' && !isCreator)
-          msg = `💌 ${plan.od || 'Tvůj partner'} upravil/a pozvánku`
+    if (!firstLoadDone.current) {
+      firstLoadDone.current = true
+      const stored = JSON.parse(localStorage.getItem(seenKey) || 'null')
+      if (stored) {
+        const msg = buildNotifMsg(stored, curr, plan, isCreator)
+        if (msg) {
+          setStickyMsg(msg)
+          navigator.setAppBadge?.(1).catch?.(() => {})
+          document.title = '(!) Randio'
+        } else {
+          localStorage.setItem(seenKey, JSON.stringify(curr))
+        }
+      } else {
+        localStorage.setItem(seenKey, JSON.stringify(curr))
       }
-      if (!prev.odpoved && curr.odpoved && isCreator) {
-        const preview = curr.odpoved.length > 50 ? curr.odpoved.slice(0, 50) + '…' : curr.odpoved
-        msg = `💬 ${plan.komu || 'Příjemce'}: „${preview}"`
+    } else {
+      if (prevPlan.current) {
+        const msg = buildNotifMsg(prevPlan.current, curr, plan, isCreator)
+        if (msg) {
+          setToast(msg)
+          localStorage.setItem(seenKey, JSON.stringify(curr))
+        }
       }
-      if (msg) setToast(msg)
     }
 
     prevPlan.current = curr
-    localStorage.setItem(seenKey, JSON.stringify(curr))
   }, [plan])
+
+  useEffect(() => {
+    return () => { document.title = 'Randio' }
+  }, [])
+
+  function dismissSticky() {
+    setStickyMsg(null)
+    navigator.clearAppBadge?.().catch?.(() => {})
+    document.title = 'Randio'
+    if (plan) {
+      localStorage.setItem(`seen_${randeId}`, JSON.stringify({
+        stav: plan.stav,
+        odpoved: plan.odpoved || null,
+      }))
+    }
+  }
 
   useEffect(() => {
     const ref = doc(db, 'rande', randeId)
@@ -156,6 +209,10 @@ export default function InviteView({ randeId }) {
 
   return (
     <>
+      {stickyMsg && (
+        <StickyNotif msg={stickyMsg} onDismiss={dismissSticky} />
+      )}
+
       {toast && (
         <InAppToast msg={toast} onClose={() => setToast(null)} />
       )}
