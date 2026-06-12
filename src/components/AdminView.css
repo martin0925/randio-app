@@ -61,14 +61,24 @@
 .admin-signout:hover { background: rgba(255,230,239,.95); transform: translateY(-1px); }
 
 /* ── TABS ────────────────────────────────────────────────── */
-.admin-tabs { display: flex; gap: 5px; margin: 20px 0 22px; }
+.admin-tabs {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 20px 0 22px;
+}
 .admin-tab {
-  flex: 1; border: 1.5px solid rgba(255,193,214,.6);
+  text-align: center;
+  border: 1.5px solid rgba(255,193,214,.6);
   background: rgba(255,247,250,.75);
   border-radius: 14px; padding: 9px 4px; font-family: inherit;
   font-size: .76rem; font-weight: 600; color: #b06a85; cursor: pointer;
   transition: background .15s, transform .12s, box-shadow .15s;
   backdrop-filter: blur(6px);
+  overflow: hidden;
+}
+@media (max-width: 400px) {
+  .admin-tab { font-size: .68rem; padding: 8px 2px; }
 }
 .admin-tab:hover { background: rgba(255,230,239,.9); transform: translateY(-1px); }
 .admin-tab.active {
@@ -404,3 +414,7 @@
   transition: color .15s, background .15s;
 }
 .friend-remove-btn:hover { color: #c2185b; background: rgba(255,230,239,.8); }
+
+@media screen {
+  .admin-view { width: 90vw; max-width: 480px; }
+}

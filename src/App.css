@@ -13,7 +13,7 @@ body {
     linear-gradient(165deg, #fff8fa 0%, #ffe6ef 52%, #ffd5e6 100%);
 }
 
-.card { width: 100%; max-width: 480px; position: relative; z-index: 1; isolation: isolate; }
+.card { max-width: 480px; position: relative; z-index: 1; isolation: isolate; }
 
 h1.title {
   font-family: 'Cormorant Garamond', serif;
